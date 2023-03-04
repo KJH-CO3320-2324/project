@@ -1,0 +1,103 @@
+﻿@implements IDisposable
+@using NoteMapper.Services.Feedback
+
+<div class="toast fade show" role="alert" 
+    data-nm-toast-id="@Id.ToString()" data-nm-toast-hideafter-seconds="@HideAfter?.TotalSeconds">
+    @if (Header != null)
+    {
+        <div class="toast-header">
+            <span class="me-auto">
+                @Header
+            </span>
+            <button type="button" class="btn-close" @onclick="OnClose"></button>
+        </div>
+    }
+    
+    @if (HideAfter != null)
+    {
+        <ProgressBar Value="@Progress" Thin="true" />
+    }    
+
+    <div class="toast-body d-flex">
+        <span class="me-auto">
+            @Content
+        </span>
+        @if (Header == null)
+        {
+            <button type="button" class="btn-close" @onclick="OnClose"></button>
+        }
+    </div>
+
+    @if (Footer != null)
+    {
+        <div class="toast-body">
+            @Footer
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment? Content { get; set; }
+
+    [Parameter]
+    public RenderFragment? Footer { get; set; }
+
+    [Parameter]
+    public string? Header { get; set; }
+
+    [Parameter]
+    public TimeSpan? HideAfter { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    Guid Id { get; } = Guid.NewGuid();
+
+    double Progress { get; set; }
+
+    DateTime Start { get; } = DateTime.Now;
+
+    Timer? Timer { get; set; }
+
+    public void Dispose()
+    {
+        if (Timer != null)
+        {
+            Timer.Dispose();
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        if (HideAfter != null)
+        {
+            Timer = new Timer(OnTick);
+            Timer.Change(0, 100);
+        }
+    }
+
+    void OnTick(object? _)
+    {
+        if (HideAfter == null)
+        {
+            return;
+        }
+
+        long deltaTicks = (DateTime.Now - Start).Ticks;
+        long hideAfterTicks = HideAfter.Value.Ticks;
+
+        Progress = (double)deltaTicks / hideAfterTicks;
+
+        InvokeAsync(StateHasChanged);
+
+        if (Progress >= 1)
+        {
+            Timer?.Dispose();
+            InvokeAsync(OnClose.InvokeAsync);
+            return;
+        }                
+    }
+}

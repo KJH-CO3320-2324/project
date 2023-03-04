@@ -1,0 +1,30 @@
+﻿<div class="progress-circle-wrapper d-flex">
+    <svg xmlns="http://www.w3.org/2000/svg" height="@SvgSize" width="@SvgSize">
+        <circle cx="@Centre" cy="@Centre" r="@Radius" 
+            stroke-dasharray="@Circumference" 
+            stroke-dashoffset="@DashOffset" />
+    </svg>
+    <button type="button" class="btn-close" @onclick="OnClose"></button>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public double Value { get; set; }    
+
+    double Centre => Radius + Offset;
+
+    double Circumference => Diameter * Math.PI;
+
+    double DashOffset => Circumference - (Circumference * Value);
+
+    double Diameter => Radius * 2;
+
+    double Offset { get; set; } = 1;
+
+    double Radius { get; set; } = 11;
+
+    double SvgSize => Diameter + Offset + 2;
+}

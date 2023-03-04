@@ -1,0 +1,31 @@
+﻿@using NoteMapper.Web.Blazor.Models
+
+@if (Model == null || string.IsNullOrEmpty(Model.Message))
+{
+    return;
+}
+
+@{
+    string cssClass;
+    switch (Model.Type)
+    {
+        case FeedbackType.Danger:
+            cssClass = "alert-danger";
+            break;
+        default:
+            cssClass = "alert-success";
+            break;
+    }
+}
+
+<div class="alert @cssClass @Class">
+    @Model.Message
+</div>
+
+@code {
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public FeedbackViewModel? Model { get; set; }
+}

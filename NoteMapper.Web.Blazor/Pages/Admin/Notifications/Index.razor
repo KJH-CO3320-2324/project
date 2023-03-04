@@ -1,0 +1,92 @@
+﻿@page "/adm/notifications"
+@inherits NoteMapperAdminComponentBase
+@attribute [Authorize]
+
+@using NoteMapper.Core
+@using NoteMapper.Services.Notifications;
+@using NoteMapper.Services.Questionnaires
+@using NoteMapper.Services.Web.Questionnaires;
+@using NoteMapper.Services.Web.ViewModels.Questionnaires;
+@using NoteMapper.Web.Blazor.Shared.Components
+@using NotificationModel = NoteMapper.Data.Core.Notifications.Notification
+
+@if (Notifications == null)
+{
+    <Loading />
+    return;
+}
+
+<nav>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="/adm">Admin</a>
+        </li>
+        <li class="breadcrumb-item active">Notifications</li>
+    </ol>
+</nav>
+
+<Feedback Model="@Feedback" />
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Content</th>
+            <th>Heading</th>
+            <th>Active</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (NotificationModel notification in Notifications)
+        {
+            <tr>
+                <td>
+                    <a href="/adm/notifications/@notification.NotificationId/edit">@notification.ContentHtml</a>
+                </td>
+                <td>@notification.Heading</td>
+                <td>@notification.Active</td>                
+                <td>
+                    <button type="button" class="btn btn-outline-danger btn-sm"
+                        @onclick="(() => DeleteNotificationAsync(notification.NotificationId))">
+                            <i class="bi bi-x-circle"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a class="btn btn-outline-primary btn-sm" href="/adm/notifications/create">
+    <i class="bi bi-plus-circle"></i>
+    Create new notification
+</a>
+
+@inject INotificationService NotificationService
+@code {
+    IReadOnlyCollection<NotificationModel>? Notifications { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        Notifications = await NotificationService.GetAllNotificationsAsync();
+    }
+
+    async Task DeleteNotificationAsync(Guid notificationId)
+    {
+        if (!await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this notification?"))
+        {
+            return;
+        }
+
+        ServiceResult result = await NotificationService.DeleteNotificationAsync(notificationId);
+        if (!result.Success)
+        {
+            SetFeedback(result);
+            return;
+        }
+
+        RemoveFeedback();
+        Notifications = await NotificationService.GetAllNotificationsAsync();
+    }
+}

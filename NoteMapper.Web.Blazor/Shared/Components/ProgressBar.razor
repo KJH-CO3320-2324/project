@@ -1,0 +1,11 @@
+﻿<div class="progress @(Thin ? "progress--thin" : "")">
+    <div class="progress-bar" style="width: @(Value * 100)%"></div>
+</div>
+
+@code {
+    [Parameter]
+    public bool Thin { get; set; }
+
+    [Parameter]
+    public double Value { get; set; }
+}

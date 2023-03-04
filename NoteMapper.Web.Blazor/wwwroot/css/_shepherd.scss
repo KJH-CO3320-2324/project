@@ -1,0 +1,9 @@
+﻿.shepherd-header {
+    // reduce padding in header
+    padding: var(--bs-card-cap-padding-y) var(--bs-card-cap-padding-x) !important;
+}
+
+.shepherd-cancel-icon {
+    // align cancel icon with header text
+    margin-top: -0.5rem !important;
+}

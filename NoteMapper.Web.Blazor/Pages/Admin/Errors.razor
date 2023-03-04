@@ -1,0 +1,119 @@
+﻿@page "/adm/error-log"
+@inherits NoteMapperAdminComponentBase
+@attribute [Authorize]
+
+@using NoteMapper.Data.Core.Errors
+@using NoteMapper.Services.Logging
+@using NoteMapper.Web.Blazor.Shared.Components
+
+@if (Model == null)
+{
+    <Loading />
+    return;
+}
+
+<nav>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="/adm">Admin</a>
+        </li>
+        <li class="breadcrumb-item active">Error log</li>
+    </ol>
+</nav>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Environment</th>
+            <th>Message</th>
+            <th>Type</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (ApplicationError error in Model)
+        {
+            <tr>
+                <td>@error.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@error.Environment</td>
+                <td>@error.Message</td>
+                <td>@error.Type</td>
+                <td>
+                    @if (error.ApplicationErrorId != null)
+                    {
+                        <div class="d-flex">
+                            <button type="button"
+                                class="btn btn-outline-secondary btn-sm ms-1"
+                                @onclick="(e => TogglePropertiesAsync(error.ApplicationErrorId.Value))">
+                                <i class="bi bi-card-list"></i>
+                            </button>
+                            <button type="button" 
+                                class="btn btn-outline-danger btn-sm ms-1"
+                                @onclick="(e => DeleteErrorAsync(error.ApplicationErrorId.Value))">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                    }                    
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<BSModal @ref="PropertiesModal" DataId="PropertiesModal" Size="Size.ExtraLarge">
+    <Content>
+        @if (Properties != null)
+        {
+            <table class="table table-striped">
+                @foreach (KeyValuePair<string, string> property in Properties)
+                {
+                    <tr>
+                        <td>@property.Key</td>
+                        <td>@property.Value</td>
+                    </tr>
+                }                
+            </table>
+        }
+    </Content>
+    <Footer Context="modal">
+        <BSButton MarginStart="Margins.Auto" Color="BSColor.Secondary" @onclick="modal.HideAsync">Close</BSButton>
+    </Footer>
+</BSModal>
+
+@inject IErrorLoggingService ErrorLoggingService
+@code {
+    IReadOnlyCollection<ApplicationError>? Model { get; set; }
+
+    DateTime From { get; set; } = DateTime.UtcNow.AddDays(-7);
+
+    BSModal? PropertiesModal { get; set; }
+
+    IReadOnlyCollection<KeyValuePair<string, string>>? Properties { get; set; }
+
+    DateTime To { get; set; } = DateTime.UtcNow;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        Model = await ErrorLoggingService.GetErrorsAsync(From, To);
+    }
+
+    async Task DeleteErrorAsync(Guid applicationErrorId)
+    {
+        await ErrorLoggingService.DeleteErrorAsync(applicationErrorId);
+        Model = await ErrorLoggingService.GetErrorsAsync(From, To);
+    }
+
+    async Task TogglePropertiesAsync(Guid applicationErrorId)
+    {
+        if (PropertiesModal == null)
+        {
+            return;
+        }
+
+        Properties = await ErrorLoggingService.GetErrorPropertiesAsync(applicationErrorId);
+        await PropertiesModal.ShowAsync();
+    }
+}

@@ -1,0 +1,60 @@
+﻿@page "/instruments/{id}/view"
+@inherits NoteMapperComponentBase
+
+@using NoteMapper.Core
+@using NoteMapper.Core.MusicTheory
+@using NoteMapper.Data.Core.Instruments
+@using NoteMapper.Services.Instruments
+@using NoteMapper.Services.Web.Instruments;
+@using NoteMapper.Services.Web.ViewModels.Instruments
+@using NoteMapper.Web.Blazor.Shared.Components
+@using NoteMapper.Web.Blazor.Shared.Instruments
+
+<PageTitle>View instrument</PageTitle>
+
+@if (Model == null)
+{
+    <Loading />
+    return;
+}
+
+<nav>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="/instruments">Instruments</a>
+        </li>
+        <li class="breadcrumb-item active">@Model.Name</li>
+    </ol>
+</nav>
+
+<InstrumentForm Model="@Model" ReadOnly="true" />
+
+<a href="/instruments" class="btn btn-outline-secondary">Back</a>
+
+@inject IUserInstrumentService UserInstrumentService
+@inject IUserInstrumentViewModelService UserInstrumentViewModelService
+@code {
+    [Parameter]
+    public string Id { get; set; } = "";
+
+    InstrumentEditViewModel? Model { get; set; }
+
+    Guid? UserId { get; set; }
+
+    UserInstrument? UserInstrument { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {        
+        UserInstrument = await UserInstrumentService.FindDefaultInstrumentAsync(Id);
+
+        if (UserInstrument == null)
+        {
+            NavigationManager.NavigateTo("/instruments");
+            return;
+        }
+
+        UserId = await GetCurrentUserIdAsync();
+
+        Model = await UserInstrumentViewModelService.MapUserInstrumentToEditViewModelAsync(UserId, UserInstrument);
+    }
+}

@@ -1,0 +1,27 @@
+﻿@page "/adm"
+@inherits NoteMapperAdminComponentBase
+@attribute [Authorize]
+
+@if (!Authorized)
+{
+    return;
+}
+
+<h3>Admin</h3>
+
+<p>
+    <a href="/adm/error-log">Error log</a>
+</p>
+<p>
+    <a href="/adm/notifications">Notifications</a>
+</p>
+<p>
+    <a href="/adm/questionnaires">Questionnaires</a>
+</p>
+<p>
+    <a href="/adm/users">Users</a>
+</p>
+
+@code {
+
+}

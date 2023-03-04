@@ -1,0 +1,166 @@
+﻿@using NoteMapper.Core.Guitars
+@using NoteMapper.Services.Users
+@using NoteMapper.Web.Blazor.Models.NoteMap
+@using NoteMapper.Web.Blazor.Shared.Components
+
+@if (Instrument == null)
+{
+    return;
+}
+
+<div class="btn-toolbar">
+    <button class="btn btn-outline-secondary btn-sm me-2"
+            data-nm-tour-step="fretboard-preferences"
+            @onclick="() => PreferencesComponent?.Open()">
+        <i class="bi bi-gear"></i>
+    </button>
+
+    <div class="btn-group btn-group-sm me-2"
+         data-nm-tour-step="fretboard-zoom">
+        <button class="btn btn-outline-secondary @(CanZoom(1) ? "" : "disabled")"
+                @onclick="e => Zoom(1)">
+            <span class="bi bi-zoom-out" aria-hidden="true"></span>
+        </button>
+
+        <button class="btn btn-outline-secondary @(CanZoom(-1) ? "" : "disabled")"
+                @onclick="e => Zoom(-1)">
+            <span class="bi bi-zoom-in" aria-hidden="true"></span>
+        </button>
+    </div>
+    <div class="btn-group btn-group-sm"
+         data-nm-tour-step="fretboard-pan">
+        <button class="btn btn-outline-secondary @(CanMove(-1) ? "" : "disabled")"
+                @onclick="e => Move(-1)">
+            <span class="bi bi-caret-left" aria-hidden="true"></span>
+        </button>
+
+        <button class="btn btn-outline-secondary @(CanMove(1) ? "" : "disabled")"
+                @onclick="e => Move(+1)">
+            <span class="bi bi-caret-right" aria-hidden="true"></span>
+        </button>
+    </div>
+</div>
+
+<OffCanvas @ref="PreferencesComponent" Heading="Preferences">
+    <NoteMapDisplayPreferences UserId="UserId"
+                               UserPreferences="UserPreferences"
+                               OnChange="OnPreferencesChange"/>
+</OffCanvas>
+
+@code{
+    [Parameter]
+    public GuitarBase? Instrument { get; set; }
+
+    [Parameter]
+    public Guid? UserId { get; set; }
+
+    [Parameter]
+    public UserPreferences? UserPreferences { get; set; }
+
+    [Parameter]
+    public EventCallback<NoteMapZoomViewModel> OnZoom { get; set; }
+
+    [Parameter]
+    public EventCallback<UserPreferences> OnPreferencesChange { get; set; }
+
+    int EndFret { get; set; }
+    int LastFret { get; set; }
+    int StartFret { get; set; }
+    int TotalFrets { get; set; }
+    int VisibleFrets { get; set; }
+
+    OffCanvas? PreferencesComponent;
+
+    GuitarBase? PreviousInstrument { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (Instrument == null || Instrument == PreviousInstrument)
+        {
+            return;
+        }
+
+        TotalFrets = Instrument.Frets + 1;
+        VisibleFrets = TotalFrets;
+        StartFret = 0;
+        LastFret = Instrument.Frets;
+        EndFret = LastFret;
+
+        PreviousInstrument = Instrument;
+        TriggerChange();
+    }
+
+    private bool CanMove(int offset)
+    {
+        if (offset == 0)
+        {
+            return false;
+        }
+
+        return offset < 0 
+            ? StartFret + offset >= 0 
+            : EndFret + offset <= LastFret;
+    }
+
+    private bool CanZoom(int offset)
+    {
+        if (offset == 0)
+        {
+            return false;
+        }
+
+        return offset < 0
+            ? VisibleFrets + offset >= 1
+            : VisibleFrets + offset <= TotalFrets;
+    }
+
+    private async Task Move(int offset)
+    {
+        if (!CanMove(offset))
+        {
+            return;
+        }
+
+        StartFret += offset;
+        EndFret += offset;
+
+        await TriggerChange();
+    }
+
+    private Task TriggerChange()
+    {
+        return OnZoom.InvokeAsync(new NoteMapZoomViewModel
+        {
+            EndFret = EndFret,
+            StartFret = StartFret
+        });
+    }
+
+    private async Task Zoom(int offset)
+    {
+        if (!CanZoom(offset))
+        {
+            return;
+        }
+
+        VisibleFrets += offset;
+
+        if (offset < 0)
+        {
+            EndFret += offset;
+        }
+        else
+        {
+            if (CanMove(offset))
+            {
+                EndFret += offset;
+            }
+            else
+            {
+                StartFret -= offset;
+            }
+        }
+
+        await TriggerChange();
+    }
+}

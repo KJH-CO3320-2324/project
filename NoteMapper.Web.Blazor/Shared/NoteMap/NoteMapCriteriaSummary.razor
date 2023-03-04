@@ -1,0 +1,14 @@
+﻿@using NoteMapper.Services.Web.ViewModels.NoteMap;
+
+@if (Criteria == null || Options == null)
+{
+    return;
+}
+
+@code {
+    [Parameter]
+    public NoteMapCriteriaViewModel? Criteria { get; set; }
+
+    [Parameter]
+    public NoteMapCriteriaOptionsViewModel? Options { get; set; }
+}

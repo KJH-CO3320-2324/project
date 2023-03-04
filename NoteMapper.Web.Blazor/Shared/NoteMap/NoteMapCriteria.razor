@@ -1,0 +1,221 @@
+﻿@using NoteMapper.Core
+@using NoteMapper.Core.Extensions
+@using NoteMapper.Core.Guitars
+@using NoteMapper.Core.MusicTheory
+@using NoteMapper.Core.NoteMap
+@using NoteMapper.Services.Users
+@using NoteMapper.Services.Web.ViewModels.NoteMap
+@using NoteMapper.Web.Blazor.Shared.Tour
+
+@{
+    if (Options == null || UserPreferences == null)
+    {
+        return;
+    }
+
+    string formGroupClass = Inline ? "form-group" : "mb-3";
+    string inputSuffix = Inline ? "inline" : "block";
+}
+
+<div>
+    @if (Inline)
+    {
+        <div class="float-end">
+            <button class="btn btn-icon" data-nm-tour-for="@TourId" type="button">
+                <i class="icon bi bi-question-circle"></i>
+            </button>
+        </div>
+    }
+
+    <div class="@(Inline ? "form-inline d-flex align-items-center" : "")">
+
+        @*INSTRUMENT*@
+        <div class="@formGroupClass" data-nm-tour-step="criteria-instrument">
+            <label class="form-label" for="instrument-@inputSuffix">Instrument</label>
+            <select class="form-control" id="instrument-@inputSuffix" value="@Model.InstrumentId"
+                    @onchange="OnInstrumentChange">
+                @foreach (GuitarBase instrument in Options.DefaultInstruments)
+                {
+                    <option value="@instrument.Id">@instrument.Name</option>
+                }
+
+                @if (Options.UserInstruments.Count > 0)
+                {
+                    <option disabled>----------</option>
+
+                    @foreach (GuitarBase instrument in Options.UserInstruments)
+                    {
+                        <option value="@instrument.Id">@instrument.Name</option>
+                    }
+                }
+            </select>
+        </div>
+
+        @*KEY*@
+        <div class="@formGroupClass" data-nm-tour-step="criteria-key">
+            <label class="form-label">Key</label>
+            @if (Inline)
+            {
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown" data-bs-auto-close="outside"
+                        @onclick="() => ShowNoteSelector = !ShowNoteSelector">
+                        @(Note.GetName(Model.NoteIndex, UserPreferences.Accidental))@Model.ScaleType.ShortDisplayName()
+                    </button>
+
+                    <div class="dropdown-menu py-0">
+                        <NoteMapKeyMenu Criteria="@Model"
+                                    Inline="@Inline"
+                                    InputSuffix="@inputSuffix"
+                                    Options="@Options"
+                                    UserPreferences="@UserPreferences"
+                                    OnNoteChange="x => OnNoteChange(x)"
+                                    OnScaleTypeChange="x => OnScaleTypeChange(x)" />
+                    </div>
+                </div>
+            }
+            else
+            {
+                <NoteMapKeyMenu Criteria="@Model"
+                            Inline="@Inline"
+                            InputSuffix="@inputSuffix"
+                            Options="@Options"
+                            UserPreferences="@UserPreferences"
+                            OnNoteChange="x => OnNoteChange(x)"
+                            OnScaleTypeChange="x => OnScaleTypeChange(x)" />
+            }
+            
+        </div>
+
+        @*TYPE*@
+        <div class="@formGroupClass" data-nm-tour-step="criteria-type">
+            <div>
+                <label class="form-label" for="type-@inputSuffix">Notes</label>
+                <select class="form-control" id="type-@inputSuffix" value="@Model.Type"
+                        @onchange="OnTypeChange">
+                    @foreach (KeyValuePair<string, string?> option in Options.TypeOptions)
+                    {
+                        <option value="@option.Key">@(option.Value ?? option.Key)</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        @*CUSTOM NOTES*@
+        @if (Model.Type == NoteCollectionType.Custom)
+        {
+            <div class="@formGroupClass">
+                @if (Inline)
+                {
+                    <label class="form-label">&nbsp;</label>
+                }                
+                <div>
+                    @foreach (KeyValuePair<int, string> option in Options.CustomNoteOptions)
+                    {
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="custom-note-@option.Key-@inputSuffix"
+                           value="@option.Key"
+                           checked="@(Model.CustomNotes.Contains(option.Key))" @onchange="e => OnCustomNoteChange(option.Key, e)">
+                            <label class="form-check-label" for="custom-note-@option.Key-@inputSuffix">
+                                @option.Value
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+        }        
+    </div>
+</div>
+
+<TourContainer TourId="@TourId" Title="Options">
+    <TourStep Target="criteria-instrument">
+        <p>Choose your instrument</p>
+        <p>Instruments can be viewed and created from the <a href="/instruments" target="_blank">instruments</a> page</p>
+    </TourStep>
+    <TourStep Target="criteria-key">
+        <p>Select your key</p>
+    </TourStep>    
+    <TourStep Target="criteria-type">
+        <p>Choose which notes you would like to find</p>
+        <p>
+            Choose between
+            <ul>
+                <li><strong>Chord</strong>: Highlight frets where all notes in the selected chord can be played</li>
+                <li><strong>Scale</strong>: Highlight frets where any note in the selected scale can be played</li>
+                <li><strong>Custom</strong>: Highlight frets where a custom selection of notes from the selected scale can be played</li>
+            </ul>
+        </p>
+    </TourStep>
+</TourContainer>
+
+@code {
+    [Parameter]
+    public bool Inline { get; set; }
+
+    [Parameter]
+    public NoteMapCriteriaOptionsViewModel? Options { get; set; }
+
+    [Parameter]
+    public NoteMapCriteriaViewModel Model { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<NoteMapCriteriaViewModel> OnChange { get; set; }
+
+    [Parameter]
+    public UserPreferences? UserPreferences { get; set; }
+
+    bool ShowNoteSelector { get; set; } = true;
+
+    string TourId => $"criteria{(Inline ? "-inline" : "")}";
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+    Task OnCustomNoteChange(int note, ChangeEventArgs e)
+    {
+        bool? @checked = (bool?)e.Value;
+        if (@checked == true)
+        {
+            Model.CustomNotes.Add(note);
+        }
+        else
+        {
+            Model.CustomNotes.Remove(note);
+        }
+
+        return EmitChange();
+    }
+
+    Task OnInstrumentChange(ChangeEventArgs e)
+    {
+        Model.InstrumentId = (string?)e.Value;
+        return EmitChange();
+    }
+
+    Task OnNoteChange(int noteIndex)
+    {
+        Model.NoteIndex = noteIndex;
+        return EmitChange();
+    }    
+
+    Task OnScaleTypeChange(ScaleType type)
+    {
+        Model.ScaleType = type;
+        return EmitChange();
+    }
+
+    Task OnTypeChange(ChangeEventArgs e)
+    {
+        string value = (string?)e.Value ?? "";
+        NoteCollectionType type = Enum.Parse<NoteCollectionType>(value, true);
+        Model.Type = Enum.IsDefined<NoteCollectionType>(type) ? type : default;
+        return EmitChange();
+    }
+
+    Task EmitChange()
+    {
+        return OnChange.InvokeAsync(Model);
+    }
+}

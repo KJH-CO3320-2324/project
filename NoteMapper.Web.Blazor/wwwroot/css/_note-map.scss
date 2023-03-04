@@ -1,0 +1,110 @@
+﻿.note-map {
+    --nm-fretboard-backgroundcolor-disabled: #ddd;
+    --nm-fretboard-backgroundcolor-enabled: #74A474;
+    --nm-fretboard-border: 1px solid var(--nm-fretboard-bordercolor-strings);
+    --nm-fretboard-border-hover: 1px solid #f00;
+    --nm-fretboard-border-permutation: 1px solid #bbb;
+    --nm-fretboard-border-fret: 3px double #999;
+    --nm-fretboard-bordercolor-hover: #BD9494;
+    --nm-fretboard-bordercolor-strings: #000;
+    --nm-fretboard-fontsize-smaller: 0.8rem;
+    --nm-fretboard-padding: 0.4rem;
+    --nm-fretboard-width-frets: 5%;
+    --nm-modifier-backgroundcolor-hover: lightgoldenrodyellow;
+}
+
+.separator {
+    height: 1rem;
+}
+
+.fretboard__heading {
+    font-size: var(--nm-fretboard-fontsize-smaller);
+}
+
+.fretboard__string,
+.modifiers__modifier {
+    border-top: var(--nm-fretboard-border);
+
+    &:last-child {
+        border-bottom: var(--nm-fretboard-border);
+    }
+}
+
+.modifier__name,
+.string__name {
+    font-size: var(--nm-fretboard-fontsize-smaller);
+    padding-right: var(--nm-fretboard-padding);
+    text-align: right;
+}
+
+.string__name {
+    white-space: nowrap;
+    display: flex;
+    justify-content: start;
+
+    .string__index {
+        margin-right: auto;
+        padding-right: var(--nm-fretboard-padding);
+    }
+}
+
+.modifier__fret,
+.string__fret {
+    border-left: var(--nm-fretboard-border-fret);
+    font-size: var(--nm-fretboard-fontsize-smaller);
+    padding: 0;
+    text-align: center;
+
+    &:last-child {
+        border-right: var(--nm-fretboard-border-fret);
+    }
+
+    .inner.disabled {
+        background-color: var(--nm-fretboard-backgroundcolor-disabled);
+    }
+}
+
+.string__fret {
+    .inner {
+        display: flex;
+        align-items: center;
+        padding-right: calc(var(--nm-fretboard-padding) / 2);
+
+        &.enabled {
+            background-color: var(--nm-fretboard-backgroundcolor-enabled);
+            padding-left: calc(var(--nm-fretboard-padding) / 2);
+        }
+    }
+}
+
+.modifier__permutations {
+    display: flex;
+}
+
+.modifier__permutation {
+    border-right: var(--nm-fretboard-border-permutation);
+    border-left: 1px solid transparent;
+    min-width: 1rem;
+
+    &:last-child {
+        border-right: 1px solid transparent;
+    }
+
+    &.enabled {
+        background-color: var(--nm-fretboard-backgroundcolor-enabled);
+    }
+
+    &.disabled {
+        background-color: var(--nm-fretboard-backgroundcolor-disabled);
+    }
+
+    &.hover {
+        cursor: pointer;
+        opacity: 0.8;
+        background-color: var(--nm-modifier-backgroundcolor-hover);
+    }
+}
+
+.note-map-key-selector {
+    display: flex;
+}

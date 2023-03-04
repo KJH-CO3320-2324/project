@@ -1,0 +1,52 @@
+﻿@page "/adm/users"
+@inherits NoteMapperAdminComponentBase
+@attribute [Authorize]
+
+@using NoteMapper.Data.Core.Users;
+@using NoteMapper.Services.Users
+@using NoteMapper.Web.Blazor.Shared.Components
+
+@if (Model == null)
+{
+    <Loading />
+    return;
+}
+
+<nav>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="/adm">Admin</a>
+        </li>
+        <li class="breadcrumb-item active">Users</li>
+    </ol>
+</nav>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (User user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@user.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@inject IUserAdminService UserAdminService
+@code {
+    IReadOnlyCollection<User>? Model { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        Model = await UserAdminService.GetUsersAsync();
+    }
+}

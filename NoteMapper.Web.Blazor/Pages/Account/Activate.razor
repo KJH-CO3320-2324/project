@@ -1,0 +1,83 @@
+﻿@page "/account/activate"
+@inherits NoteMapperComponentBase
+@attribute [AllowAnonymous]
+
+@using NoteMapper.Core
+@using NoteMapper.Services.Users
+@using NoteMapper.Web.Blazor.Extensions
+@using NoteMapper.Web.Blazor.Models
+@using NoteMapper.Web.Blazor.Models.Account
+@using NoteMapper.Web.Blazor.Shared.Components
+@using NoteMapper.Web.Blazor.Shared.Layouts
+
+<ContentPage>
+    <h1>Activate your account</h1>
+
+    <Feedback Model="@Feedback" />
+
+    @if (Feedback?.Type == FeedbackType.Success)
+    {
+        <div class="mt-3">
+            <a href="/account/login" class="btn btn-outline-primary">Login</a>
+        </div>
+    }
+    else
+    {
+        <EditForm Model="@Model" OnValidSubmit="@HandleValidSubmitAsync">
+            <DataAnnotationsValidator />
+
+            <fieldset disabled="@Loading">
+                <div class="mb-3">
+                    <label for="password" class="form-label required">Password</label>
+                    <InputText id="password" type="password" @bind-Value="Model.Password" class="form-control" />
+                    <ValidationMessage For="() => Model.Password" />
+                </div>
+
+                <div>
+                    <button type="submit" class="btn btn-primary">
+                        Activate
+                        @if (Loading)
+                        {
+                            <ButtonSpinner />
+                        }
+                    </button>
+                </div>
+            </fieldset>
+        </EditForm>
+    }
+</ContentPage>
+
+@code {
+    string Code { get; set; } = "";
+
+    string Email { get; set; } = "";
+
+    bool Loading { get; set; }
+
+    ActivateViewModel Model { get; set; } = new();
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.TryGetQueryStringValue("code", out string code);
+        NavigationManager.TryGetQueryStringValue("email", out string email);        
+
+        if (string.IsNullOrEmpty(code) || 
+            string.IsNullOrEmpty(email))
+        {
+            NavigationManager.NavigateTo("/");
+        }
+
+        Code = code;
+        Email = email;
+    }
+
+    private async Task HandleValidSubmitAsync()
+    {
+        Loading = true;
+
+        ServiceResult result = await IdentityService.ActivateUserAsync(Email, Code, Model.Password);
+        Feedback = FeedbackViewModel.FromServiceResult(result);
+
+        Loading = false;
+    }
+}

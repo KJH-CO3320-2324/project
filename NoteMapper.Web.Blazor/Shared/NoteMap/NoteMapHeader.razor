@@ -1,0 +1,74 @@
+﻿@using NoteMapper.Core.Guitars
+@using NoteMapper.Services.Users;
+@using NoteMapper.Services.Web.ViewModels.NoteMap
+@using NoteMapper.Web.Blazor.Models.NoteMap
+@using NoteMapper.Web.Blazor.Shared.Components
+
+@if (UserPreferences == null)
+{
+    return;
+}
+
+<div class="card mb-3 d-none d-sm-block">
+    <div class="card-body">
+        <NoteMapCriteria Inline="true" 
+                         Model="@Criteria" 
+                         Options="@CriteriaOptions"
+                         UserPreferences="@UserPreferences"
+                         OnChange="OnCriteriaChange" />
+    </div>
+</div>
+
+<div class="d-flex">
+    <div class="btn-group d-sm-none me-auto">
+        <button class="btn btn-outline-secondary btn-sm "
+                @onclick="() => OptionsComponent?.Open()">
+            Options
+        </button>
+    </div>
+
+    <div class="d-flex flex-grow-1 justify-content-end">
+        <NoteMapToolbar Instrument="@Instrument"
+                        UserId="UserId"
+                        UserPreferences="UserPreferences"
+                        OnPreferencesChange="OnPreferencesChange"
+                        OnZoom="OnZoomChange" />
+    </div>
+</div>
+
+<div class="d-block d-sm-none">
+    <OffCanvas @ref="OptionsComponent" Heading="Options">
+        <NoteMapCriteria Model="@Criteria"
+                         Options="@CriteriaOptions"
+                         UserPreferences="@UserPreferences"
+                         OnChange="OnCriteriaChange" />
+    </OffCanvas>   
+</div>
+
+@code {
+    [Parameter]
+    public NoteMapCriteriaViewModel Criteria { get; set; } = new();
+
+    [Parameter]
+    public NoteMapCriteriaOptionsViewModel? CriteriaOptions { get; set; }
+
+    [Parameter]
+    public GuitarBase? Instrument { get; set; }
+
+    [Parameter]
+    public Guid? UserId { get; set; }
+
+    [Parameter]
+    public UserPreferences? UserPreferences { get; set; }
+
+    [Parameter]
+    public EventCallback<NoteMapCriteriaViewModel> OnCriteriaChange { get; set; }
+
+    [Parameter]
+    public EventCallback<UserPreferences> OnPreferencesChange { get; set; }
+
+    [Parameter]
+    public EventCallback<NoteMapZoomViewModel?> OnZoomChange { get; set; }
+
+    OffCanvas? OptionsComponent;
+}

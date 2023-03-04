@@ -1,0 +1,19 @@
+﻿.progress--thin {
+    height: 1px;
+}
+
+.progress-circle-wrapper {
+    position: relative;
+
+    svg {
+        fill: none;
+        stroke: var(--bs-primary);
+        stroke-width: 2px;
+        position: absolute;
+    }
+
+    .btn-close {
+        margin-top: 1px;
+        margin-left: 1px;
+    }
+}

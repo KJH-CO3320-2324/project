@@ -1,0 +1,38 @@
+﻿@page "/about"
+@inherits NoteMapperComponentBase
+@attribute [AllowAnonymous]
+
+@using NoteMapper.Web.Blazor.Shared.Components
+@using NoteMapper.Web.Blazor.Shared.Layouts
+
+<ContentPage>
+    <h1 data-version="@Version">About</h1>
+
+    <h4>What is Note Mapper?</h4>
+    <p>
+        Note Mapper aims to help Pedal Steel Guitar players discover the playing positions available to them in their setup.
+    </p>
+
+    <h4>Find combinations</h4>
+    <p>
+        Select your instrument, choose your key and let Note Mapper do the rest. 
+        You will be presented with valid pedal and lever combinations for each fret.
+    </p>
+
+    <h4>Build your own custom instrument</h4>
+    <p>
+        Can't find your setup in the list of defaults? 
+        Create your own instrument using the <a href="/instruments">instrument builder</a>.
+    </p>
+</ContentPage>
+
+@code {
+    string? Version { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        Version = ThisAssembly.Git.Commit;
+    }
+}

@@ -1,0 +1,16 @@
+﻿<div class="d-none"
+     data-nm-tour-container="@TourId"
+     data-nm-tour-title="@Title">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] 
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    [Parameter]
+    public string? TourId { get; set; }
+}

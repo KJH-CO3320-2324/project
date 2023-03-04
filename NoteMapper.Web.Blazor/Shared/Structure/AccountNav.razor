@@ -1,0 +1,49 @@
+﻿<AuthorizeView>
+    <Authorized>
+        @if (IsMobile)
+        {
+            <BSNavItem Url="/survey">Survey</BSNavItem>
+            <BSNavItem>
+                <a class="btn btn-outline-light w-100" href="/account/logout">Logout</a>
+            </BSNavItem>
+        }
+        else
+        {
+            <div class="dropdown p-0">
+                <button class="btn p-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="bi bi-person text-light fs-2"></span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="/survey">Survey</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="/account/logout">Logout</a>
+                    </li>                
+                </ul>
+            </div>
+        }
+    </Authorized>
+    <NotAuthorized>
+        @if (IsMobile) 
+        {
+            <BSNavItem>
+                <a class="btn btn-outline-light w-100" href="/account/register">Register</a>
+            </BSNavItem>
+            <BSNavItem>
+                <a class="btn btn-light w-100" href="/account/login">Login</a>
+            </BSNavItem>            
+        } 
+        else
+        {
+            <a class="btn btn-outline-light me-1" href="/account/register">Register</a>
+            <a class="btn btn-light" href="/account/login">Login</a>
+        }
+        
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter]
+    public bool IsMobile { get; set; }
+}

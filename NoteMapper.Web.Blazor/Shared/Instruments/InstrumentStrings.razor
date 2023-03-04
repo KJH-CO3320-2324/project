@@ -1,0 +1,148 @@
+﻿@using NoteMapper.Services.Web.ViewModels.Instruments;
+
+@if (Model == null)
+{
+    return;
+}
+
+<div class="table-responsive mb-2">
+    <table class="table table-sm align-middle table-bordered-body w-auto text-center">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Note</th>
+
+                @foreach (InstrumentModifierViewModel m in Model.Modifiers)
+                {
+                    <th>
+                        @m.Name
+                    </th>
+                }
+
+                @if (!ReadOnly)
+                {
+                    <th>
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Strings.Count; i++)
+            {
+                InstrumentStringViewModel s = Model.Strings.ElementAt(i);
+                <tr>
+                    <td>@(i + 1)</td>
+                    <td>
+                        @if (!ReadOnly)
+                        {
+                            <div class="d-flex">
+                                <InputSelect @bind-Value="s.NoteIndex" class="form-control form-control-sm select--notes">
+                                    @foreach (KeyValuePair<int, string> noteOption in Model.NoteOptions)
+                                    {
+                                        <option value="@noteOption.Key">@noteOption.Value</option>
+                                    }
+                                </InputSelect>
+                                <InputSelect @bind-Value="s.Octave" class="form-control form-control-sm select--octaves">
+                                    @foreach (int octave in Model.OctaveOptions)
+                                    {
+                                        <option>@octave</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        }
+                        else
+                        {
+                            @s.NoteName
+                        }
+                    </td>
+
+                    @foreach (StringOffsetViewModel o in s.ModifierOffsets)
+                    {
+                        string? textClass = o.Offset < 0 ? "text-danger" : o.Offset > 0 ? "text-success" : null;
+
+                        <td>
+                            <div class="d-flex justify-content-between">
+                                <span>
+                                    @if (!ReadOnly)
+                                    {
+                                        <button class="btn btn-icon" @onclick="(e => o.Offset--)" type="button">
+                                            <i class="bi bi-caret-left"></i>
+                                        </button>
+                                    }
+                                </span>
+                                <span class="d-flex justify-content-center align-items-center @textClass">
+                                    @for (int offset = 0; offset < Math.Abs(o.Offset); offset++)
+                                    {
+                                        <span>
+                                            @if (o.Offset < 0)
+                                            {
+                                                <i class="bi bi-dash-circle-fill"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-plus-circle-fill"></i>
+                                            }
+                                        </span>
+                                    }
+                                </span>
+                                <span>
+                                    @if (!ReadOnly)
+                                    {
+                                        <button class="btn btn-icon" @onclick="(e => o.Offset++)" type="button">
+                                            <i class="bi bi-caret-right"></i>
+                                        </button>
+                                    }
+                                </span>
+                            </div>
+                        </td>
+                    }
+
+                    @if (!ReadOnly)
+                    {
+                        <td>
+                            <button type="button" class="btn btn-outline-danger btn-sm"
+                            @onclick="(e => RemoveStringAsync(s))">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+
+        @if (!ReadOnly)
+        {
+            <tfoot>
+                <tr>
+                    <td class="border-bottom-0"></td>
+                    <td class="border-bottom-0">
+                        <button type="button" class="w-100 btn btn-outline-primary btn-sm"
+                            @onclick="(e => Model.AddString())">
+                            <i class="bi bi-plus-circle"></i>
+                            Add string
+                        </button>
+                    </td>
+                </tr>
+            </tfoot>
+        }
+    </table>
+</div>
+
+@inject IJSRuntime JsRuntime
+@code {
+    [Parameter]
+    public InstrumentEditViewModel? Model { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    private async Task RemoveStringAsync(InstrumentStringViewModel s)
+    {
+        if (!await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this string?"))
+        {
+            return;
+        }
+
+        Model?.RemoveString(s);
+    }
+}

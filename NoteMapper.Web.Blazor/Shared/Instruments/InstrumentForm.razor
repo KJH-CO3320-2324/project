@@ -1,0 +1,54 @@
+﻿@using NoteMapper.Core.Guitars;
+@using NoteMapper.Core.Guitars.Implementations;
+@using NoteMapper.Core.MusicTheory
+@using NoteMapper.Data.Core.Instruments;
+@using NoteMapper.Services.Web;
+@using NoteMapper.Services.Web.ViewModels.Instruments;
+
+@if (Model == null)
+{
+    return;
+}
+
+@if (!ReadOnly)
+{
+    <EditForm EditContext="@EditContext">
+        <div class="form-inline">
+            <div class="form-group mb-3 p-0">
+                <label for="name" class="form-label required">Name</label>
+                <InputText @bind-Value="Model.Name" class="form-control" />
+                <ValidationMessage For="() => Model.Name" />
+            </div>
+        </div>
+    </EditForm>
+}
+else
+{
+    <h3>@Model.Name</h3>
+}
+
+<BSNav IsTabs="true" Class="mb-3">
+    <BSNavItem>
+        <TabLabel>Strings</TabLabel>
+        <TabContent>
+            <InstrumentStrings Model="@Model" ReadOnly="@ReadOnly" />
+        </TabContent>
+    </BSNavItem>
+    <BSNavItem>
+        <TabLabel>Modifiers</TabLabel>
+        <TabContent>
+            <InstrumentModifiers Model="@Model" ReadOnly="@ReadOnly" />
+        </TabContent>
+    </BSNavItem>
+</BSNav>
+
+@code {
+    [Parameter]
+    public EditContext? EditContext { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
+    public InstrumentEditViewModel? Model { get; set; }
+}

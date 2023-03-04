@@ -1,0 +1,52 @@
+﻿@using NoteMapper.Infrastructure.Extensions
+
+@*Mobile nav*@
+<BSNavbar Class="d-sm-none" Color="BSColor.Dark" IsDark="true" Expand="Size.Small">
+    <BSContainer>
+        <BSNavbarBrand Url="/">
+            @ApplicationName
+        </BSNavbarBrand>
+        <BSCollapse IsInNavbar="true">
+            <Toggler>
+                <BSNavbarToggle />
+            </Toggler>            
+            <Content>
+                <BSNav>
+                    <BSNavItem Url="/instruments">Instruments</BSNavItem>
+                    <BSNavItem Url="/about">About</BSNavItem>
+                    <BSNavItem Url="/contact">Contact</BSNavItem>
+
+                    <AccountNav IsMobile="true" />
+                </BSNav>
+            </Content>
+        </BSCollapse>
+    </BSContainer>
+</BSNavbar>
+
+@*Desktop nav*@
+<BSNavbar Class="d-none d-sm-flex" Color="BSColor.Dark" IsDark="true" Expand="Size.Small">
+    <BSContainer Container="Container.ExrtaLarge" Class="px-md-5">
+        <BSNavbarBrand Url="/">
+            @ApplicationName
+        </BSNavbarBrand>
+        <BSNav MarginEnd="Margins.Auto">
+            <BSNavItem Url="/instruments">Instruments</BSNavItem>
+            <BSNavItem Url="/about">About</BSNavItem>
+            <BSNavItem Url="/contact">Contact</BSNavItem>
+        </BSNav>
+
+        <AccountNav IsMobile="false" />
+    </BSContainer>
+</BSNavbar>
+
+@inject IConfiguration Configuration
+@code{
+    string? ApplicationName { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ApplicationName = Configuration.GetValue("Application.Name");
+
+        base.OnInitialized();
+    }
+}

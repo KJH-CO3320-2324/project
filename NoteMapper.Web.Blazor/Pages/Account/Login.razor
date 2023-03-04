@@ -1,0 +1,85 @@
+﻿@page "/account/login"
+@inherits NoteMapperComponentBase
+@attribute [AllowAnonymous]
+
+@using NoteMapper.Core
+@using NoteMapper.Data.Core.Users
+@using NoteMapper.Services.Users
+@using NoteMapper.Services.Web
+@using NoteMapper.Web.Blazor.Models
+@using NoteMapper.Web.Blazor.Models.Account
+@using NoteMapper.Web.Blazor.Shared.Components
+@using NoteMapper.Web.Blazor.Shared.Layouts
+
+<ContentPage>
+    <h1>Login</h1>
+
+    <EditForm Model="@Model" OnValidSubmit="@HandleValidSubmitAsync">
+        <DataAnnotationsValidator />
+    
+        <fieldset disabled="@Loading">
+            <div class="mb-3">
+                <label for="email" class="form-label required">Email</label>
+                <InputText id="email" @bind-Value="Model.Email" class="form-control" tabindex="1" />
+                <ValidationMessage For="() => Model.Email" />
+            </div>
+
+            <div class="mb-3">
+                <div class="d-flex">
+                    <label for="password" class="form-label required me-auto">Password</label>
+                    <a href="/account/password/forgotten" tabindex="4">
+                        Forgotten password?
+                    </a>
+                </div>
+                <InputText id="password" type="password" @bind-Value="Model.Password" class="form-control" tabindex="2" />            
+                <ValidationMessage For="() => Model.Password" />
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary" tabindex="3">
+                    Login
+                    @if (Loading)
+                    {
+                        <ButtonSpinner />
+                    }                
+                </button>
+            </div>
+        </fieldset>
+    </EditForm>
+
+    <Feedback Model="@Feedback" />
+</ContentPage>
+
+@inject IUrlEncoder UrlEncoder
+@code {
+    bool Loading { get; set; }
+    LoginViewModel Model { get; set; } = new();    
+
+    private async Task HandleValidSubmitAsync()
+    {
+        Loading = true;
+
+        User? user = await IdentityService.FindUserAsync(Model.Email);
+        ServiceResult result = await IdentityService.CanUserSignIn(user, Model.Password);
+        if (user == null || !result.Success)
+        {            
+            SetFeedback(result);
+            Loading = false;
+            return;
+        }
+
+        UserLoginToken? token = await IdentityService.CreateLoginTokenAsync(user.UserId);
+        Loading = false;
+
+        if (token == null)
+        {
+            SetError("An error occurred during login");            
+            return;
+        }
+
+        string url = "/account/dologin?email={email}&token={token}"
+            .Replace("{email}", UrlEncoder.UrlEncode(user.Email))
+            .Replace("{token}", UrlEncoder.UrlEncode(token.Token));
+        NavigationManager.NavigateTo(url, new NavigationOptions { ForceLoad = true });        
+    }
+}

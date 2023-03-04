@@ -1,0 +1,123 @@
+﻿@page "/instruments/create"
+@inherits NoteMapperComponentBase
+@attribute [Authorize]
+
+@using NoteMapper.Core.Guitars
+@using NoteMapper.Core
+@using NoteMapper.Core.MusicTheory
+@using NoteMapper.Data.Core.Instruments
+@using NoteMapper.Services.Feedback;
+@using NoteMapper.Services.Instruments
+@using NoteMapper.Services.Web.Instruments
+@using NoteMapper.Services.Web.ViewModels.Instruments
+@using NoteMapper.Web.Blazor.Extensions
+@using NoteMapper.Web.Blazor.Models
+@using NoteMapper.Web.Blazor.Shared.Components
+@using NoteMapper.Web.Blazor.Shared.Instruments
+@using NoteMapper.Web.Blazor.Shared.Layouts
+
+<PageTitle>Create instrument</PageTitle>
+
+@if (Model == null)
+{
+    <Loading />
+    return;
+}
+
+<nav>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="/instruments">Instruments</a>
+        </li>
+        <li class="breadcrumb-item active">Create</li>
+    </ol>
+</nav>
+
+<h1>Create new instrument</h1>
+
+<EditForm Model="@Model" OnValidSubmit="CreateInstrumentAsync" Context="editContext">
+    <DataAnnotationsValidator />
+
+    <fieldset disabled="@Loading">
+        <InstrumentForm Model="@Model" EditContext="@editContext" />
+
+        <button class="btn btn-primary me-1">
+            Create
+            @if (Loading)
+            {
+                <ButtonSpinner />
+            }
+        </button>
+
+        <a class="btn btn-outline-secondary" href="/instruments">
+            Cancel
+        </a>
+    </fieldset>
+</EditForm>
+
+<CopedantLinks />
+
+@inject IFeedbackService FeedbackService
+@inject IUserInstrumentService UserInstrumentService
+@inject IUserInstrumentViewModelService UserInstrumentViewModelService
+@code {
+    bool Loading { get; set; }
+
+    InstrumentEditViewModel? Model { get; set; }
+
+    UserInstrument? Template { get; set; }
+
+    Guid UserId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {        
+        Guid? userId = await GetCurrentUserIdAsync();
+        if (userId == null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        UserId = userId.Value;
+
+        if (NavigationManager.TryGetQueryStringValue("template", out string template))
+        {
+            Template = await UserInstrumentService.FindUserInstrumentAsync(UserId, template);
+        }
+
+        if (Template == null)
+        {
+            Template = UserInstrumentService.GetNewUserInstrument(GuitarType.PedalSteelGuitar);
+        }
+        else
+        {
+            Template.Name += " (Copy)";
+        }
+
+        Model = await UserInstrumentViewModelService.MapUserInstrumentToEditViewModelAsync(UserId, Template);
+    }
+
+    async Task CreateInstrumentAsync()
+    {
+        if (Model == null || Template == null)
+        {
+            return;
+        }
+
+        Loading = true;
+
+        UserInstrumentViewModelService.MapEditViewModelToUserInstrument(Model, Template);
+
+        ServiceResult result = await UserInstrumentService.CreateInstrumentAsync(UserId, Template);
+        if (result.Success)
+        {
+            FeedbackService.Notify(new FeedbackMessage(result));
+            NavigationManager.NavigateTo("/instruments");
+            return;
+        }
+
+        SetFeedback(result);
+
+        Loading = false;
+    }
+}

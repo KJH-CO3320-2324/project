@@ -1,0 +1,44 @@
+﻿@using NoteMapper.Services.Logging;
+@inherits ErrorBoundary
+
+@if (CurrentException == null)
+{
+    @ChildContent
+}
+else if (ErrorContent != null)
+{
+    @ErrorContent(CurrentException)
+}
+else
+{
+    <p class="text-danger">An error has occurred</p>
+}
+
+@inject IErrorLoggingService ErrorLoggingService
+@inject NavigationManager NavigationManager
+@code {
+    private int ErrorCount = 0;
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        if (ErrorCount++ > 1)
+        {
+            return Task.CompletedTask;
+        }
+
+        string url = NavigationManager.Uri.ToString();
+        return ErrorLoggingService.LogExceptionAsync(exception, url);
+    }    
+
+    void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // Clear the error status when the user navigates away from the current page
+        ErrorCount = 0;
+        base.Recover();
+    }
+}

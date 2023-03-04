@@ -1,0 +1,21 @@
+﻿.table-fixed {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.table-bordered-body {
+    tbody {
+        td {
+            border-width: $table-border-width;
+        }
+    }
+}
+
+.table-column--sticky {
+    position: sticky;
+    left: 0;
+    // ensure the content obscures the content behind
+    z-index: 2;
+    background-color: #fff;
+    background-clip: padding-box;
+}

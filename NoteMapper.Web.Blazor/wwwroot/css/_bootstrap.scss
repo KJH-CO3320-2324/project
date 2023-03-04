@@ -1,0 +1,7 @@
+﻿$border-radius: 0.2rem;
+
+@import "../lib/bootstrap/scss/bootstrap.scss";
+
+:focus-visible {
+    outline: none;
+}

@@ -1,0 +1,14 @@
+﻿.btn-icon {
+    /*constrain the button and the icon to the bounds of the icon itself*/
+    border: none;
+    padding: 0;
+    display: inline-flex;
+
+    .icon {
+        display: inline-flex;
+    }
+}
+
+.btn:focus-visible {
+    background-color: transparent;
+}

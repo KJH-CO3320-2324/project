@@ -1,0 +1,101 @@
+﻿@using NoteMapper.Core.Extensions;
+@using NoteMapper.Core.MusicTheory
+@using NoteMapper.Services.Users
+@using NoteMapper.Services.Web.ViewModels.NoteMap;
+
+@if (Criteria == null ||
+    Options == null ||
+    UserPreferences == null)
+{
+    return;
+}
+
+<div class="d-flex flex-column card-body">
+    <div class="list-group list-group-horizontal mb-3">
+        <div class="row flex-nowrap g-0">
+            @for (int i = 0; i < Options.NoteIndexes.Count; i++)
+            {
+                (int natural, int? sharp) = Options.NoteIndexes.ElementAt(i);
+
+                <div class="col me-1">
+                    <div class="mb-1">
+                        @{NoteInputTemplate(natural);}
+                    </div>
+                    <div class="mb-1">
+                        @{NoteInputTemplate(sharp);}
+                    </div>
+                </div>                
+            }
+        </div>        
+    </div>
+
+    <div class="list-group list-group-horizontal">
+        @foreach (ScaleType type in Options.ScaleTypes)
+        {
+            <div class="me-1">
+                @{ScaleInputTemplate(type);}
+            </div>
+        }
+    </div>
+</div>
+
+@{
+    void NoteInputTemplate(int? noteIndex)
+    {        
+        if (noteIndex == null)
+        {
+            return;
+        }         
+
+        bool active = Criteria.NoteIndex == noteIndex;
+        string noteInputId = $"note-index-{noteIndex}-{InputSuffix}";
+
+        <div>
+            <input class="visually-hidden" type="radio" name="note-index-@InputSuffix"
+           value="@noteIndex" checked="@active" id="@noteInputId"
+               @onchange="() => OnNoteChange.InvokeAsync(noteIndex.Value)" />
+            <label class="list-group-item @(Inline ? "" : "list-group-item-sm") list-group-item-action @(active ? "active" : "") text-nowrap"
+               for="@noteInputId">
+                @(Note.GetName(noteIndex.Value, UserPreferences.Accidental))
+            </label>
+        </div>
+    }
+
+    void ScaleInputTemplate(ScaleType type)
+    {
+        bool active = Criteria.ScaleType == type;
+        string inputId = $"scale-type-{type}-{InputSuffix}";
+
+        <div>
+            <input class="visually-hidden" type="radio" name="note-index-@InputSuffix"
+                value="@type" checked="@active" id="@inputId"
+                @onchange="() => OnScaleTypeChange.InvokeAsync(type)" />
+            <label class="list-group-item @(Inline ? "" : "list-group-item-sm") list-group-item-action @(active ? "active" : "")" for="@inputId">
+                @type.ShortName()
+            </label>
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public NoteMapCriteriaViewModel? Criteria { get; set; }
+
+    [Parameter]
+    public bool Inline { get; set; }
+
+    [Parameter]
+    public string? InputSuffix { get; set; }
+
+    [Parameter]
+    public NoteMapCriteriaOptionsViewModel? Options { get; set; }
+
+    [Parameter]
+    public UserPreferences? UserPreferences { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnNoteChange { get; set; }
+
+    [Parameter]
+    public EventCallback<ScaleType> OnScaleTypeChange { get; set; }
+}

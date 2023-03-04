@@ -1,0 +1,87 @@
+﻿@using NoteMapper.Core.MusicTheory;
+@using NoteMapper.Services.Users;
+@using NoteMapper.Services.Web.ViewModels.NoteMap;
+
+@if (UserPreferences == null)
+{
+    return;
+}
+
+@*INTERVALS*@
+<div class="form-group mb-3">
+    <div class="form-check form-switch">
+        <input type="checkbox" class="form-check-input" id="intervals" role="switch"
+               checked="@UserPreferences.Intervals" @onchange="OnIntervalsChange">
+        <label class="form-check-label" for="intervals">Show note intervals</label>
+    </div>
+</div>
+
+@*ACCIDENTAL*@
+<div class="form-group">
+    <label class="form-label">Show notes as</label>
+    <div>
+        @foreach (KeyValuePair<AccidentalType, string> option in Options.AccidentalOptions)
+        {
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="accidental" id="accidental-@option.Key"
+                   checked="@(UserPreferences.Accidental == option.Key)" @onchange="OnAccidentalChange"
+                   value="@option.Key">
+                <label class="form-check-label" for="accidental-@option.Key">
+                    @option.Value
+                </label>
+            </div>
+        }
+    </div>
+</div>
+
+@inject IUserService UserService
+@code {
+    [Parameter]
+    public EventCallback<UserPreferences> OnChange { get; set; }
+
+    [Parameter]
+    public UserPreferences? UserPreferences { get; set; }
+
+    [Parameter]
+    public Guid? UserId { get; set; }
+
+    NoteMapDisplayPreferenceOptionsViewModel Options { get; } = new NoteMapDisplayPreferenceOptionsViewModel();    
+
+    Task OnAccidentalChange(ChangeEventArgs e)
+    {
+        string? value = (string?)e.Value;
+        if (value == null || UserPreferences == null)
+        {
+            return Task.CompletedTask;
+        }
+
+        UserPreferences.Accidental = Enum.Parse<AccidentalType>(value);
+        return EmitChange();
+    }
+
+    Task OnIntervalsChange(ChangeEventArgs e)
+    {
+        if (UserPreferences == null)
+        {
+            return Task.CompletedTask;
+        }
+
+        UserPreferences.Intervals = (bool?)e.Value ?? false;
+        return EmitChange();
+    }
+
+    async Task EmitChange()
+    {        
+        if (UserPreferences == null)
+        {
+            return;
+        }
+
+        if (UserId != null)
+        {
+            await UserService.UpdateUserPreferences(UserId.Value, UserPreferences);
+        }
+        
+        await OnChange.InvokeAsync(UserPreferences);
+    }
+}

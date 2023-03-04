@@ -1,0 +1,34 @@
+﻿@using NoteMapper.Services.Web.ViewModels.Notifications;
+
+@if (Model == null)
+{
+    return;
+}
+
+<div class="mb-3">
+    <label class="form-label required" for="content-html">Content HTML</label>
+    <InputTextArea @bind-Value="Model.ContentHtml" class="form-control" id="content-html" />
+    <ValidationMessage For="() => Model.ContentHtml" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label" for="heading">Heading</label>
+    <InputText @bind-Value="Model.Heading" class="form-control" id="heading" />
+    <ValidationMessage For="() => Model.Heading" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label" for="hide-for-days">Hide for (days)</label>
+    <InputNumber @bind-Value="Model.HideForDays" class="form-control" id="hide-for-days" />
+    <ValidationMessage For="() => Model.HideForDays" />
+</div>
+
+<div class="mb-3 form-check">
+    <InputCheckbox @bind-Value="Model.Active" class="form-check-input" id="active" />
+    <label class="form-check-label" for="active">Active</label>
+</div>
+
+@code {
+    [Parameter]
+    public EditNotificationViewModel? Model { get; set; }
+}

@@ -1,0 +1,33 @@
+﻿<div class="offcanvas offcanvas-start @(Visible ? "show" : "")">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title">@Heading</h5>
+        <button type="button" class="btn-close" @onclick="HandleClose"></button>
+    </div>
+    <div class="offcanvas-body">
+        @ChildContent
+    </div>
+</div>
+@if (Visible)
+{
+    <div class="offcanvas-backdrop fade show" @onclick="HandleClose"></div>
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public string? Heading { get; set; }        
+
+    bool Visible { get; set; }
+
+    public void Open()
+    {
+        Visible = true;
+    }
+
+    void HandleClose()
+    {
+        Visible = false;
+    }
+}

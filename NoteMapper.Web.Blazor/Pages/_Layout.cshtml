@@ -1,0 +1,62 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+@using NoteMapper.Infrastructure.Extensions
+@using NoteMapper.Web.Blazor.Shared
+@using NoteMapper.Web.Blazor.Shared.Components
+
+@namespace NoteMapper.Web.Blazor.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@inject IConfiguration Configuration
+@{
+    string recaptchaKey = Configuration.GetValue("Recaptcha.SiteKey");
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="~/" />
+    <link href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/lib/shepherd.js/dist/css/shepherd.css" />
+    <link href="~/css/site.min.css" rel="stylesheet" />    
+    <component type="typeof(HeadOutlet)" render-mode="Server" />
+    <component type="typeof(Favicons)" render-mode="Server" />
+</head>
+<body>
+    @RenderBody()
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>    
+
+    <script src="_framework/blazor.server.js"></script>        
+    <script src="~/js/nm.blazor.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.js"></script>
+
+    <script src="_content/BlazorStrap/popper.min.js"></script>
+    <script src="_content/BlazorStrap/blazorstrap.js"></script>
+
+    <script src="~/lib/shepherd.js/dist/js/shepherd.js"></script>
+    
+    <p data-js-remove>
+        Javascript should be enabled to use this site
+    </p>
+
+    <script src="~/js/site.js"></script>    
+    <script src="~/js/nm.scroll.js"></script>
+    <script src="~/js/nm.tour.js"></script>
+
+    <script src="https://www.google.com/recaptcha/api.js?render=@recaptchaKey"></script>
+    <script src="~/js/nm.recaptcha.js"></script>
+</body>
+</html>

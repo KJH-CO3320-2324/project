@@ -1,0 +1,19 @@
+﻿.notifications-container {
+    position: fixed;
+    z-index: 1000;
+}
+
+@include media-breakpoint-down(md) {
+    .notifications-container {        
+        bottom: 1rem;
+        max-width: 90vw;
+    }
+}
+
+@include media-breakpoint-up(sm) {
+    .notifications-container {
+        position: absolute;
+        top: 0;
+        right: 0;
+    }
+}

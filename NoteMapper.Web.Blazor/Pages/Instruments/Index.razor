@@ -1,0 +1,208 @@
+﻿@page "/instruments"
+@inherits NoteMapperComponentBase
+
+<PageTitle>Instruments</PageTitle>
+
+@using System.Net
+@using NoteMapper.Core.Guitars
+@using NoteMapper.Core
+@using NoteMapper.Data.Core.Instruments
+@using NoteMapper.Data.Core.Users
+@using NoteMapper.Services
+@using NoteMapper.Services.Feedback
+@using NoteMapper.Services.Instruments
+@using NoteMapper.Web.Blazor.Shared.Components
+@using NoteMapper.Web.Blazor.Shared.Instruments
+@using NoteMapper.Web.Blazor.Shared.Layouts
+
+<h1>Instruments</h1>
+
+@if (DefaultInstruments == null || UserInstruments == null)
+{
+    <Loading />
+    return;
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+
+            @if (User != null)
+            {
+                <th></th>
+            }            
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (GuitarBase instrument in DefaultInstruments)
+        {
+            <tr>
+                <td>
+                    <a href="/instruments/@instrument.Id/view">@instrument.Name</a>
+                </td>
+
+                @if (User != null)
+                {
+                    <td>
+                        @if (User?.IsAdmin == true)
+                        {
+                            <a href="/instruments/@instrument.Id/edit"
+                                class="btn btn-outline-primary btn-sm me-1">
+                                Edit
+                            </a>
+                        }       
+
+                        <a href="/instruments/create?template=@instrument.Id"
+                           class="btn btn-outline-primary btn-sm">
+                            Copy
+                        </a>
+
+                        @if (User?.IsAdmin == true)
+                        {
+                            <button type="button" 
+                                    class="btn btn-outline-danger btn-sm ms-1"
+                                    disabled="@(Deleting != null)"
+                                    @onclick="(e => DeleteDefaultInstrumentAsync(instrument.Id))">
+                                @if (Deleting == instrument.Id)
+                                {
+                                    <ButtonSpinner />
+                                }
+                                else
+                                {
+                                    <i class="bi bi-x-circle"></i>
+                                }                                
+                            </button>
+                        }
+                    </td>
+                }                
+            </tr>
+        }
+    </tbody>
+
+    @if (UserInstruments.Count > 0)
+    {
+        <tbody>
+            <tr>
+                <td colspan="2">
+                    <h4>Custom</h4>
+                </td>
+            </tr>
+            @foreach (GuitarBase instrument in UserInstruments)
+            {
+                <tr>
+                    <td>
+                        <a href="/instruments/@instrument.Id/edit">@instrument.Name</a>
+                    </td>
+                    <td>                                         
+                        <a href="/instruments/create?template=@instrument.Id"
+                            class="btn btn-outline-primary btn-sm">
+                            Copy
+                        </a>
+                        <button type="button" class="btn btn-outline-danger btn-sm"
+                            disabled="@(Deleting != null)"
+                            @onclick="(e => DeleteInstrumentAsync(instrument.Id))">
+                            @if (Deleting == instrument.Id)
+                            {
+                                <ButtonSpinner />
+                            }
+                            else
+                            {
+                                <i class="bi bi-x-circle"></i>
+                            }    
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    }
+</table>
+
+@if (User != null)
+{
+    <a class="btn btn-outline-primary btn-sm" href="/instruments/create">
+        <i class="bi bi-plus-circle"></i>
+        Create new instrument
+    </a>
+}
+else
+{
+    <div class="d-flex align-items-center">
+        <a href="/account/login" class="btn btn-primary">Login</a>
+        <span class="mx-1">or</span>
+        <a href="/account/register" class="btn btn-outline-primary">Register</a>
+        <span class="mx-1">to create your own custom instrument.</span>
+    </div>
+}
+
+@inject IFeedbackService FeedbackService
+@inject IUserInstrumentService UserInstrumentService
+@code {
+    IReadOnlyCollection<GuitarBase>? DefaultInstruments;
+    IReadOnlyCollection<GuitarBase>? UserInstruments;
+
+    string? Deleting { get; set; }
+
+    User? User { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await GetCurrentUserAsync();        
+
+        DefaultInstruments = await UserInstrumentService.GetDefaultInstrumentsAsync();
+        UserInstruments = User != null 
+            ? await UserInstrumentService.GetUserInstrumentsAsync(User.UserId)
+            : Array.Empty<GuitarBase>();
+    }
+
+    async Task DeleteDefaultInstrumentAsync(string userInstrumentId)
+    {
+        if (Deleting != null)
+        {
+            return;
+        }
+
+        if (!await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this instrument?"))
+        {
+            return;
+        }
+
+        Deleting = userInstrumentId;
+        StateHasChanged();
+
+        ServiceResult result = await UserInstrumentService.DeleteDefaultInstrumentAsync(userInstrumentId);
+        if (result.Success)
+        {
+            DefaultInstruments = await UserInstrumentService.GetDefaultInstrumentsAsync();
+        }
+
+        Deleting = null;
+    }
+
+    async Task DeleteInstrumentAsync(string userInstrumentId)
+    {
+        if (User == null)
+        {
+            return;
+        }
+
+        if (!await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this instrument?"))
+        {
+            return;
+        }
+
+        Deleting = userInstrumentId;
+        StateHasChanged();
+
+        ServiceResult result = await UserInstrumentService.DeleteInstrumentAsync(User.UserId, userInstrumentId);
+
+        FeedbackService.Notify(new FeedbackMessage(result));
+
+        if (result.Success)
+        {
+            UserInstruments = await UserInstrumentService.GetUserInstrumentsAsync(User.UserId);
+        }
+
+        Deleting = null;
+    }
+}

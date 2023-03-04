@@ -1,0 +1,19 @@
+﻿@using NoteMapper.Services.Feedback
+
+@switch (Model)
+{
+    case FeedbackType.Success:
+        <i class="bi bi-check-circle-fill text-success"></i>
+        break;
+    case FeedbackType.Warning:
+        <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+        break;
+    case FeedbackType.Danger:
+        <i class="bi bi-x-circle-fill text-danger"></i>
+        break;
+}
+
+@code {
+    [Parameter]
+    public FeedbackType Model { get; set; }
+}

@@ -1,0 +1,112 @@
+﻿@using NoteMapper.Data.Core.Questionnaires
+@using NoteMapper.Services.Web.ViewModels.Questionnaires
+
+@if (Model == null)
+{
+    return;
+}
+
+<div class="mb-3">
+    <label class="form-label required" for="name">Name</label>
+    <InputText @bind-Value="Model.Name" class="form-control" id="name" />
+    <ValidationMessage For="() => Model.Name" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label required" for="link-text">Link text</label>
+    <InputText @bind-Value="Model.LinkText" class="form-control" id="link-text" />
+    <ValidationMessage For="() => Model.LinkText" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label required" for="intro-text">Intro text</label>
+    <InputTextArea @bind-Value="Model.IntroText" class="form-control" id="intro-text" />
+    <ValidationMessage For="() => Model.IntroText" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label" for="expires">Expires</label>
+    <InputDate @bind-Value="Model.ExpiresUtc" class="form-control" id="expires" />
+</div>
+
+<div class="mb-3 form-check">
+    <InputCheckbox @bind-Value="Model.Active" class="form-check-input" id="active" />
+    <label class="form-check-label" for="active">Active</label>
+</div>
+
+@for (int i = 0; i < Model.Questions.Count; i++)
+{
+    EditQuestionViewModel question = Model.Questions[i];
+
+    string requiredId = $"question-{i}-required";
+    string textId = $"question-{i}-text";
+    string typeId = $"question-{i}-type";
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title d-flex">
+                <span>Question @(i + 1)</span>
+                <button type="button"
+                    class="btn btn-outline-danger btn-sm ms-auto"
+                    @onclick="(() => Model.RemoveQuestion(question))">
+                    <i class="bi bi-x-circle"></i>
+                </button>
+            </h5>
+            <div class="mb-3">
+                <label class="form-label required" for="@textId">Text</label>
+                <InputText @bind-Value="@question.QuestionText" id="@textId" class="form-control" />
+                <ValidationMessage For="() => question.QuestionText" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="@typeId">Type</label>
+                <InputSelect @bind-Value="@question.Type" class="form-control" id="@typeId">
+                    @foreach (KeyValuePair<QuestionType, string> option in Model.TypeOptions)
+                    {
+                        <option value="@option.Key">@option.Value</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => question.Type" />
+            </div>
+
+            @if (question.Type == QuestionType.Number)
+            {
+                string minId = $"question-{i}-min";
+                string maxId = $"question-{i}-max";
+
+                <div class="mb-3">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-label" for="@minId">Min</label>
+                            <InputNumber @bind-Value="@question.MinValue" class="form-control" id="@minId" />
+                            <ValidationMessage For="() => question.MinValue" />
+                        </div>
+                        <div class="col">
+                            <label class="form-label" for="@maxId">Max</label>
+                            <InputNumber @bind-Value="@question.MaxValue" class="form-control" id="@maxId" />
+                            <ValidationMessage For="() => question.MaxValue" />
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="mb-3 form-check">
+                <InputCheckbox @bind-Value="@question.Required" class="form-check-input" id="@requiredId" />
+                <label class="form-check-label" for="@requiredId">Required</label>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="my-3">
+    <button type="button" class="btn btn-outline-primary btn-sm"
+            @onclick="() => Model.AddQuestion()">
+        <i class="bi bi-plus-circle"></i>
+        Add question
+    </button>
+</div>
+
+@code {
+    [Parameter]
+    public EditQuestionnaireViewModel? Model { get; set; }
+}

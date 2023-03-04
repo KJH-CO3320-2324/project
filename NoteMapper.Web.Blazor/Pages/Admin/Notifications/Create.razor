@@ -1,0 +1,73 @@
+﻿@page "/adm/notifications/create"
+@inherits NoteMapperAdminComponentBase
+@attribute [Authorize]
+
+@using NoteMapper.Core
+@using NoteMapper.Services.Feedback;
+@using NoteMapper.Services.Web.Notifications
+@using NoteMapper.Services.Web.ViewModels.Notifications
+@using NoteMapper.Web.Blazor.Shared.Admin.Notifications
+@using NoteMapper.Web.Blazor.Shared.Components
+
+@if (Model == null)
+{
+    <Loading />
+    return;
+}
+
+<nav>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="/adm">Admin</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="/adm/questionnaires">Questionnaires</a>
+        </li>
+        <li class="breadcrumb-item active">Create</li>
+    </ol>
+</nav>
+
+<EditForm Model="@Model" OnValidSubmit="HandleValidSubmitAsync">
+    <ObjectGraphDataAnnotationsValidator />
+
+    <NotificationForm Model="@Model" />
+
+    <div class="d-flex align-items-start">
+        <button class="btn btn-primary">Create</button>
+        @if (Feedback != null)
+        {
+            <div class="ms-3 flex-grow-1">
+                <Feedback Class="alert-sm" Model="Feedback" />
+            </div>
+        }        
+    </div>
+        
+</EditForm>
+
+@inject IFeedbackService FeedbackService
+@inject INotificationViewModelService NotificationViewModelService
+@code {
+    EditNotificationViewModel? Model { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        Model = new EditNotificationViewModel();
+    }
+
+    async Task HandleValidSubmitAsync()
+    {
+        if (Model == null)
+        {
+            return;
+        }
+
+        ServiceResult result = await NotificationViewModelService.CreateNotificationAsync(Model);
+        FeedbackService.Notify(new FeedbackMessage(result));
+        if (result.Success)
+        {
+            NavigationManager.NavigateTo("/adm/notifications");
+        }
+    }
+}

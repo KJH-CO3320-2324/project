@@ -1,0 +1,142 @@
+﻿@page "/survey"
+@inherits NoteMapperComponentBase
+@attribute [Authorize]
+
+@using NoteMapper.Core
+@using NoteMapper.Core.Extensions;
+@using NoteMapper.Data.Core.Questionnaires;
+@using NoteMapper.Data.Core.Users
+@using NoteMapper.Services.Web.Contact
+@using NoteMapper.Services.Web.Questionnaires
+@using NoteMapper.Services.Web.ViewModels.Contact
+@using NoteMapper.Services.Web.ViewModels.Questionnaires
+@using NoteMapper.Web.Blazor.Shared.Components
+@using NoteMapper.Web.Blazor.Shared.Layouts
+
+<ContentPage>
+    <h1>Survey</h1>
+
+    @if (Model == null)
+    {
+        <Loading />
+        return;
+    }
+
+    <Feedback Model="@Feedback" />
+
+    <p>@Model.IntroText</p>
+
+    <EditForm Model="@Model" OnValidSubmit="HandleValidSubmit">
+        <ObjectGraphDataAnnotationsValidator />
+
+        <fieldset disabled="@Submitting">
+            @foreach (QuestionnaireResponseViewModel question in Model.Responses)
+            {
+                int questionIndex = Model.Responses.IndexOf(question);
+                string name = $"question-{questionIndex}";
+
+                <div class="mb-4 @(question.QuestionType == QuestionType.Boolean ? "form-check" : "")">
+                    @if (question.QuestionType != QuestionType.Boolean)
+                    {
+                        <label class="form-label @(question.Required ? "required" : "")"
+                            for="@name">
+                            @question.QuestionText
+                        </label>
+                    }
+            
+                    @switch (question.QuestionType)
+                    {
+                        case QuestionType.Boolean:
+                            <InputCheckbox @bind-Value="question.ValueBoolean" class="form-check-input" id="@name" />
+                            <label class="form-check-label" for="@name">@question.QuestionText</label>
+
+                            break;
+                        case QuestionType.ShortText:
+                            <InputText @bind-Value="@question.Value" class="form-control" id="@name" />
+                            <ValidationMessage For="() => Model.Responses[questionIndex].Value" />
+                            break;
+                        case QuestionType.LongText:
+                            <InputTextArea @bind-Value="@question.Value" class="form-control" id="@name" />
+                            <ValidationMessage For="() => question.Value" />
+                            break;
+                        case QuestionType.Number:
+                            if (question.MinValue != null && question.MaxValue != null)
+                            {
+                                <div>
+                                    <InputRadioGroup @bind-Value="question.Value">
+                                        @for (int i = question.MinValue.Value; i <= question.MaxValue.Value; i++)
+                                        {
+                                            string optionName = $"{name}-{i}";
+
+                                            <div class="form-check form-check-inline">
+                                                <InputRadio Value="@i.ToString()" id="@optionName" />
+                                                <label class="form-check-label" for="@optionName">
+                                                    @i
+                                                </label>
+                                            </div>
+                                        }
+                                    </InputRadioGroup>
+                                </div>
+                            }
+                            else
+                            {
+                                <InputNumber @bind-Value="@question.ValueNumber" class="form-control" id="@name" />
+                                <ValidationMessage For="() => question.Value" />
+                            }
+                            break;
+                    }
+                </div>
+            }
+
+            <button class="btn btn-primary">
+                Submit
+                @if (Submitting)
+                {
+                    <ButtonSpinner />
+                }
+            </button>
+        </fieldset>
+    </EditForm>
+</ContentPage>
+
+@inject IContactService ContactService
+@inject IQuestionnaireViewModelService QuestionnaireViewModelService
+@code {
+    QuestionnaireResponsesViewModel? Model { get; set; }
+
+    bool Submitting { get; set; }
+
+    User? User { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        User = await GetCurrentUserAsync();
+        if (User == null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        Model = await QuestionnaireViewModelService.GetLatestQuestionnaireResponsesAsync(User.UserId);
+        if (Model == null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {        
+        if (User == null || Model == null)
+        {
+            return;
+        }
+
+        Submitting = true;
+
+        ServiceResult result = await QuestionnaireViewModelService.SaveResponsesAsync(User.UserId, Model);
+        SetFeedback(result);
+
+        Submitting = false;
+    }
+}

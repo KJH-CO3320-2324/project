@@ -1,0 +1,29 @@
+﻿@using NoteMapper.Core;
+@using NoteMapper.Services.Web.Security;
+
+@if (Model == null)
+{
+    return;
+}
+
+@inject IJSRuntime JsRuntime
+@inject IRecaptchaService RecaptchaService
+@code {
+    RecaptchaViewModel? Model { get; set; }    
+
+    public async Task<ServiceResult> VerifyAsync()
+    {
+        string token = await JsRuntime.InvokeAsync<string>("recaptcha", Model?.SiteKey, "submit");
+        bool success = await RecaptchaService.VerifyAsync(token);
+        return success
+            ? ServiceResult.Successful()
+            : ServiceResult.Failure("Recaptcha failed. Please try again.");
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        Model = RecaptchaService.GetRecaptchaViewModel();
+
+        return base.OnInitializedAsync();
+    }
+}

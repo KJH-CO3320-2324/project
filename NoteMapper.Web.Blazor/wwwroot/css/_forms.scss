@@ -1,0 +1,38 @@
+﻿.form-inline {
+    display: flex;
+
+    .form-group {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+
+    .form-control {
+        width: auto;
+    }
+
+    .form-label {
+        margin-bottom: 0;
+    }
+}
+
+.select--notes {
+    min-width: 2.5rem;
+}
+
+.select--octaves {
+    min-width: 2rem;
+}
+
+// Validation
+label.required:after {
+    color: var(--color-danger);
+    content: ' *'
+}
+
+.invalid {
+    outline: 1px solid red;
+}
+
+.validation-message {
+    color: var(--color-danger);
+}

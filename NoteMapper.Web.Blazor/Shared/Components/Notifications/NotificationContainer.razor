@@ -1,0 +1,101 @@
+﻿@using NoteMapper.Services.Feedback
+@using NoteMapper.Services.Notifications
+@using NoteMapper.Services.Users
+@using NotificationModel = NoteMapper.Data.Core.Notifications.Notification
+@implements IDisposable
+
+<div class="notifications-container">
+    @if (Notifications != null)
+    {
+        foreach (NotificationModel notification in Notifications)
+        {
+            <Notification Header="@notification.Heading" OnClose="() => Notifications.Remove(notification)">
+                <Content>
+                    @((MarkupString)notification.ContentHtml)
+                </Content>
+                <Footer>
+                    <div class="d-flex justify-content-end">
+                        <button class="btn btn-sm btn-link p-0" @onclick="() => OnHideAsync(notification)">Maybe later</button>
+                        <button class="btn btn-sm btn-link p-0" @onclick="() => OnDismissAsync(notification)">Don't show me again</button>
+                    </div>                    
+                </Footer>
+            </Notification>   
+        }        
+    }
+
+    @foreach (FeedbackMessage message in Messages)
+    {
+        <Notification HideAfter="@TimeSpan.FromSeconds(5)" Header="@message.Heading" 
+            OnClose="() => Messages.Remove(message)">
+            <Content>
+                <NotificationIcon Model="@message.Type" />
+                @message.Message
+            </Content>
+        </Notification>
+    }
+</div>
+
+@inject IFeedbackService FeedbackService
+@inject INotificationService NotificationService
+@inject IUserLocator UserLocator
+@code {
+    List<FeedbackMessage> Messages { get; } = new();
+
+    List<NotificationModel>? Notifications { get; set; }
+
+    Guid? UserId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        FeedbackService.OnNotify += OnNotify;
+
+        UserId = await UserLocator.GetCurrentUserIdAsync();
+
+        if (UserId != null)
+        {
+            Notifications = new List<NotificationModel>(await NotificationService.GetUserNotificationsAsync(UserId.Value));
+        }
+    }
+
+    void IDisposable.Dispose()
+    {
+        FeedbackService.OnNotify -= OnNotify;
+    }
+
+    Task OnDismissAsync(NotificationModel notification)
+    {
+        Notifications?.Remove(notification);
+
+        if (UserId == null)
+        {
+            return Task.CompletedTask;
+        }
+
+        return NotificationService.DismissNotificationAsync(UserId.Value, notification);
+    }
+
+    Task OnHideAsync(NotificationModel notification)
+    {
+        Notifications?.Remove(notification);
+
+        if (UserId == null)
+        {
+            return Task.CompletedTask;
+        }
+
+        return NotificationService.HideNotificationAsync(UserId.Value, notification);
+    }
+
+    void OnNotify(FeedbackMessage feedback)
+    {
+        if (string.IsNullOrEmpty(feedback.Message))
+        {
+            return;
+        }
+
+        Messages.Add(feedback);
+        InvokeAsync(StateHasChanged);
+    }
+}

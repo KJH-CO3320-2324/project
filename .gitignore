@@ -1,0 +1,7 @@
+.vs
+bin
+obj
+appSettings.Development.json
+*.user
+/NoteMapper.Web.Blazor/Properties/PublishProfiles
+/NoteMapper.Web.Blazor/Properties/ServiceDependencies
