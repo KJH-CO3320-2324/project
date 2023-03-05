@@ -6,10 +6,12 @@ namespace NoteMapper.Web.Blazor.Pages.Admin
     {
         protected bool Authorized { get; set; }
 
+        protected User? User { get; private set; }
+
         protected override async Task OnInitializedAsync()
         {
-            User? user = await GetCurrentUserAsync();
-            Authorized = user?.IsAdmin == true;
+            User = await GetCurrentUserAsync();
+            Authorized = User?.IsAdmin == true;
             if (!Authorized)
             {
                 NavigationManager.NavigateTo("/");

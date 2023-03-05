@@ -1,0 +1,159 @@
+﻿@page "/adm/instruments"
+@inherits NoteMapperAdminComponentBase
+@attribute [Authorize]
+
+@using NoteMapper.Core.Guitars
+@using NoteMapper.Core
+@using NoteMapper.Services.Feedback
+@using NoteMapper.Services.Instruments
+@using NoteMapper.Web.Blazor.Shared.Components
+
+@if (DefaultInstruments == null || UserInstruments == null)
+{
+    <Loading />
+    return;
+}
+
+<nav>
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="/adm">Admin</a>
+        </li>
+        <li class="breadcrumb-item active">Instruments</li>
+    </ol>
+</nav>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th></th>            
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (GuitarBase instrument in DefaultInstruments)
+        {
+            <tr>
+                <td>
+                    <a href="/adm/instruments/@instrument.Id/edit">@instrument.Name</a>
+                </td>  
+                <td>
+                    <button type="button"
+                        class="btn btn-outline-danger btn-sm ms-1"
+                        disabled="@(Deleting != null)"
+                        @onclick="(e => DeleteDefaultInstrumentAsync(instrument.Id))">
+                        @if (Deleting == instrument.Id)
+                        {
+                            <ButtonSpinner />
+                        }
+                        else
+                        {
+                            <i class="bi bi-x-circle"></i>
+                        }
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+
+    @if (UserInstruments.Count > 0)
+    {
+        <tbody>
+            <tr>
+                <td colspan="2">
+                    <h4>Custom</h4>
+                </td>
+            </tr>
+            @foreach (GuitarBase instrument in UserInstruments)
+            {
+                <tr>
+                    <td>
+                        <a href="/instruments/@instrument.Id/edit">@instrument.Name</a>
+                    </td>
+                    <td>
+                        <button class="btn btn-outline-primary btn-sm"
+                                disabled="@(ConvertingToDefault != null)"
+                                @onclick="(() => ConvertToDefaultAsync(instrument.Id))">
+                            Convert to default
+                            @if (ConvertingToDefault == instrument.Id)
+                            {
+                                <ButtonSpinner />
+                            }
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    }
+</table>
+
+@inject IFeedbackService FeedbackService
+@inject IUserInstrumentService UserInstrumentService
+@code {
+    IReadOnlyCollection<GuitarBase>? DefaultInstruments;
+    IReadOnlyCollection<GuitarBase>? UserInstruments;
+
+    string? ConvertingToDefault { get; set; }
+
+    string? Deleting { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        DefaultInstruments = await UserInstrumentService.GetDefaultInstrumentsAsync();
+        UserInstruments = User != null
+            ? await UserInstrumentService.GetUserInstrumentsAsync(User.UserId)
+            : Array.Empty<GuitarBase>();
+    }
+
+    async Task ConvertToDefaultAsync(string userInstrumentId)
+    {
+        if (ConvertingToDefault != null || User == null)
+        {
+            return;
+        }
+
+        if (!await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to convert this into a default instrument?"))
+        {
+            return;
+        }
+
+        ConvertingToDefault = userInstrumentId;
+        StateHasChanged();
+
+        ServiceResult result = await UserInstrumentService.ConvertToDefaultAsync(User.UserId, userInstrumentId);
+        FeedbackService.Notify(new FeedbackMessage(result));
+
+        if (result.Success)
+        {
+            DefaultInstruments = await UserInstrumentService.GetDefaultInstrumentsAsync();            
+        }
+
+        ConvertingToDefault = null;
+    }
+
+    async Task DeleteDefaultInstrumentAsync(string userInstrumentId)
+    {
+        if (Deleting != null)
+        {
+            return;
+        }
+
+        if (!await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this instrument?"))
+        {
+            return;
+        }
+
+        Deleting = userInstrumentId;
+        StateHasChanged();
+
+        ServiceResult result = await UserInstrumentService.DeleteDefaultInstrumentAsync(userInstrumentId);
+        if (result.Success)
+        {
+            DefaultInstruments = await UserInstrumentService.GetDefaultInstrumentsAsync();
+        }
+
+        Deleting = null;
+    }
+}

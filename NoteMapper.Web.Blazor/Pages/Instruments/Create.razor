@@ -82,7 +82,12 @@
 
         if (NavigationManager.TryGetQueryStringValue("template", out string template))
         {
-            Template = await UserInstrumentService.FindUserInstrumentAsync(UserId, template);
+            Template = await UserInstrumentService.FindDefaultInstrumentAsync(template);
+
+            if (Template == null)
+            {
+                Template = await UserInstrumentService.FindUserInstrumentAsync(UserId, template);
+            }
         }
 
         if (Template == null)

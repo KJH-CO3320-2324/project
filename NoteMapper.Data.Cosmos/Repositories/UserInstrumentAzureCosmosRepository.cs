@@ -83,27 +83,14 @@ namespace NoteMapper.Data.Cosmos.Repositories
             }
         }
 
-        public async Task<ServiceResult> UpdateUserInstrumentAsync(Guid userId, UserInstrument userInstrument)
+        public Task<ServiceResult> UpdateDefaultInstrumentAsync(UserInstrument userInstrument)
         {
-            using (CosmosClient client = CreateClient())
-            {
-                Container container = GetContainer(client);
-                UserInstruments? entry = await FindAsync(container, userId.ToString());
-                if (entry == null)
-                {
-                    return ServiceResult.Successful();
-                }
+            return UpdateUserInstrumentAsync(DefaultUserId, userInstrument);
+        }
 
-                for (int i = 0; i < entry.Instruments.Count; i++)
-                {
-                    if (entry.Instruments[i].UserInstrumentId == userInstrument.UserInstrumentId)
-                    {
-                        entry.Instruments[i] = userInstrument;
-                    }
-                }
-
-                return await UpdateAsync(container, userId.ToString(), entry);
-            }
+        public Task<ServiceResult> UpdateUserInstrumentAsync(Guid userId, UserInstrument userInstrument)
+        {
+            return UpdateUserInstrumentAsync(userId.ToString(), userInstrument);
         }
 
         private async Task<ServiceResult> CreateUserInstrumentAsync(string userId, UserInstrument userInstrument)
@@ -169,6 +156,29 @@ namespace NoteMapper.Data.Cosmos.Repositories
 
                 return entry.Instruments
                     .FirstOrDefault(x => string.Equals(x.UserInstrumentId, userInstrumentId, StringComparison.InvariantCultureIgnoreCase));
+            }
+        }
+
+        private async Task<ServiceResult> UpdateUserInstrumentAsync(string userId, UserInstrument userInstrument)
+        {
+            using (CosmosClient client = CreateClient())
+            {
+                Container container = GetContainer(client);
+                UserInstruments? entry = await FindAsync(container, userId);
+                if (entry == null)
+                {
+                    return ServiceResult.Successful();
+                }
+
+                for (int i = 0; i < entry.Instruments.Count; i++)
+                {
+                    if (entry.Instruments[i].UserInstrumentId == userInstrument.UserInstrumentId)
+                    {
+                        entry.Instruments[i] = userInstrument;
+                    }
+                }
+
+                return await UpdateAsync(container, userId, entry);
             }
         }
     }

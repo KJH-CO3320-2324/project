@@ -6,7 +6,7 @@ namespace NoteMapper.Services.Instruments
 {
     public interface IUserInstrumentService
     {
-        Task<ServiceResult> ConvertToDefaultAsync(Guid userId, UserInstrument instrument);
+        Task<ServiceResult> ConvertToDefaultAsync(Guid userId, string userInstrumentId);
 
         Task<ServiceResult> CreateInstrumentAsync(Guid userId, UserInstrument instrument);
 
@@ -25,6 +25,8 @@ namespace NoteMapper.Services.Instruments
         UserInstrument GetNewUserInstrument(GuitarType type);
 
         Task<IReadOnlyCollection<GuitarBase>> GetUserInstrumentsAsync(Guid userId);
+
+        Task<ServiceResult> UpdateDefaultInstrumentAsync(UserInstrument instrument);
 
         Task<ServiceResult> UpdateInstrumentAsync(Guid userId, UserInstrument instrument);
     }

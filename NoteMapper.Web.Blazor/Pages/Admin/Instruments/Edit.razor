@@ -1,19 +1,15 @@
-﻿@page "/instruments/{id:guid}/edit"
-@inherits NoteMapperComponentBase
+﻿@page "/adm/instruments/{id}/edit"
+@inherits NoteMapperAdminComponentBase
 @attribute [Authorize]
 
-@using NoteMapper.Core
-@using NoteMapper.Core.MusicTheory
+@using NoteMapper.Core;
 @using NoteMapper.Data.Core.Instruments
-@using NoteMapper.Data.Core.Users
 @using NoteMapper.Services.Feedback
 @using NoteMapper.Services.Instruments
 @using NoteMapper.Services.Web.Instruments
 @using NoteMapper.Services.Web.ViewModels.Instruments
 @using NoteMapper.Web.Blazor.Shared.Components
 @using NoteMapper.Web.Blazor.Shared.Instruments
-
-<PageTitle>Edit instrument</PageTitle>
 
 @if (Model == null)
 {
@@ -24,19 +20,17 @@
 <nav>
     <ol class="breadcrumb">
         <li class="breadcrumb-item">
-            <a href="/instruments">Instruments</a>
+            <a href="/adm">Admin</a>
         </li>
-        <li class="breadcrumb-item active">
-            @UserInstrument?.Name
+        <li class="breadcrumb-item">
+            <a href="/adm/instruments">Instruments</a>
         </li>
+        <li class="breadcrumb-item active">Edit</li>
     </ol>
 </nav>
 
-<Feedback Model="Feedback" />
-
-<h1>Edit instrument</h1>
-
 <EditForm Model="@Model" Context="editContext" OnValidSubmit="UpdateInstrumentAsync">
+    
     <fieldset disabled="@Updating">
         <InstrumentForm Model="@Model" EditContext="@editContext" />
 
@@ -49,21 +43,19 @@
                 }
             </button>
 
-            <a class="btn btn-outline-secondary" href="/instruments">
+            <a class="btn btn-outline-secondary" href="/adm/instruments">
                 Cancel
             </a>
         </div>
     </fieldset>    
 </EditForm>
 
-<CopedantLinks />
-
 @inject IFeedbackService FeedbackService
 @inject IUserInstrumentService UserInstrumentService
 @inject IUserInstrumentViewModelService UserInstrumentViewModelService
 @code {
     [Parameter]
-    public Guid Id { get; set; }
+    public string? Id { get; set; }
 
     bool Loading { get; set; }
 
@@ -71,28 +63,27 @@
 
     bool Updating { get; set; }
 
-    User? User { get; set; }
-
     UserInstrument? UserInstrument { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        User = await GetCurrentUserAsync();
-        if (User == null)
+        await base.OnInitializedAsync();
+
+        if (Id == null)
         {
-            NavigationManager.NavigateTo("/");
+            NavigationManager.NavigateTo("/adm/instruments");
             return;
         }
 
-        UserInstrument = await UserInstrumentService.FindUserInstrumentAsync(User.UserId, Id.ToString());        
+        UserInstrument = await UserInstrumentService.FindDefaultInstrumentAsync(Id);
         if (UserInstrument == null)
         {
-            NavigationManager.NavigateTo("/instruments");
+            NavigationManager.NavigateTo("/adm/instruments");
             return;
         }
 
-        Model = await UserInstrumentViewModelService.MapUserInstrumentToEditViewModelAsync(User.UserId, UserInstrument);
-    }    
+        Model = await UserInstrumentViewModelService.MapUserInstrumentToEditViewModelAsync(User?.UserId, UserInstrument);
+    }
 
     async Task UpdateInstrumentAsync()
     {
@@ -105,11 +96,11 @@
 
         UserInstrumentViewModelService.MapEditViewModelToUserInstrument(Model, UserInstrument);
 
-        ServiceResult result = await UserInstrumentService.UpdateInstrumentAsync(User.UserId, UserInstrument);
+        ServiceResult result = await UserInstrumentService.UpdateDefaultInstrumentAsync(UserInstrument);
         if (result.Success)
         {
             FeedbackService.Notify(new FeedbackMessage(result));
-            NavigationManager.NavigateTo("/instruments");
+            NavigationManager.NavigateTo("/adm/instruments");
             return;
         }
 

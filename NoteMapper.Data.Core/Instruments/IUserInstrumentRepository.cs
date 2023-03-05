@@ -20,6 +20,8 @@ namespace NoteMapper.Data.Core.Instruments
 
         Task<IReadOnlyCollection<UserInstrument>> GetUserInstrumentsAsync(Guid userId);
 
+        Task<ServiceResult> UpdateDefaultInstrumentAsync(UserInstrument userInstrument);
+
         Task<ServiceResult> UpdateUserInstrumentAsync(Guid userId, UserInstrument userInstrument);
     }
 }

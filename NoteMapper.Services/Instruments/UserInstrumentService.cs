@@ -1,7 +1,7 @@
 ﻿using NoteMapper.Core;
 using NoteMapper.Core.Guitars;
 using NoteMapper.Data.Core.Instruments;
-using NoteMapper.Data.Core.Users;
+using NoteMapper.Services.Users;
 
 namespace NoteMapper.Services.Instruments
 {
@@ -17,13 +17,23 @@ namespace NoteMapper.Services.Instruments
             _userInstrumentRepository = userInstrumentRepository;
         }
 
-        public async Task<ServiceResult> ConvertToDefaultAsync(Guid userId, UserInstrument userInstrument)
+        public async Task<ServiceResult> ConvertToDefaultAsync(Guid userId, string userInstrumentId)
         {
-            ServiceResult validationResult = await ValidateInstrumentAsync(userId, userInstrument);
+            UserInstrument? userInstrument = await _userInstrumentRepository.FindUserInstrumentAsync(userId, userInstrumentId);
+            if (userInstrument == null)
+            {
+                return ServiceResult.Failure("Instrument not found");
+            }
+
+            IReadOnlyCollection<UserInstrument> existing = await _userInstrumentRepository.GetDefaultInstrumentsAsync();            
+
+            ServiceResult validationResult = ValidateInstrument(existing, userInstrument);
             if (!validationResult.Success)
             {
                 return validationResult;
             }
+            
+            userInstrument.UserInstrumentId = Guid.NewGuid().ToString();
 
             ServiceResult result = await _userInstrumentRepository.CreateDefaultInstrumentAsync(userInstrument);
             return result;
@@ -31,7 +41,9 @@ namespace NoteMapper.Services.Instruments
 
         public async Task<ServiceResult> CreateInstrumentAsync(Guid userId, UserInstrument userInstrument)
         {
-            ServiceResult validationResult = await ValidateInstrumentAsync(userId, userInstrument);
+            IReadOnlyCollection<UserInstrument> existing = await _userInstrumentRepository.GetUserInstrumentsAsync(userId);
+
+            ServiceResult validationResult = ValidateInstrument(existing, userInstrument);
             if (!validationResult.Success)
             {
                 return validationResult;
@@ -66,7 +78,12 @@ namespace NoteMapper.Services.Instruments
 
         public async Task<GuitarBase?> FindAsync(Guid? userId, string userInstrumentId)
         {
-            UserInstrument? userInstrument = await FindUserInstrumentAsync(userId, userInstrumentId);
+            UserInstrument? userInstrument = await FindDefaultInstrumentAsync(userInstrumentId);
+            if (userInstrument == null)
+            {
+                userInstrument = await FindUserInstrumentAsync(userId, userInstrumentId);
+            }
+
             return userInstrument != null
                 ? _instrumentFactory.FromUserInstrument(userInstrument)
                 : null;
@@ -79,19 +96,12 @@ namespace NoteMapper.Services.Instruments
 
         public async Task<UserInstrument?> FindUserInstrumentAsync(Guid? userId, string userInstrumentId)
         {            
-            UserInstrument? @default = await FindDefaultInstrumentAsync(userInstrumentId);
-            if (@default != null)
-            {
-                return @default;
-            }
-
             if (userId == null)
             {
                 return null;
             }
 
-            UserInstrument? userInstrument = await _userInstrumentRepository.FindUserInstrumentAsync(userId.Value, userInstrumentId);
-            return userInstrument;
+            return await _userInstrumentRepository.FindUserInstrumentAsync(userId.Value, userInstrumentId);
         }
 
         public async Task<IReadOnlyCollection<GuitarBase>> GetDefaultInstrumentsAsync()
@@ -126,34 +136,56 @@ namespace NoteMapper.Services.Instruments
                 .ToArray();
         }
 
-        public async Task<ServiceResult> UpdateInstrumentAsync(Guid userId, UserInstrument instrument)
+        public async Task<ServiceResult> UpdateDefaultInstrumentAsync(UserInstrument instrument)
         {
-            ServiceResult validationResult = await ValidateInstrumentAsync(userId, instrument);
+            IReadOnlyCollection<UserInstrument> existing = await _userInstrumentRepository.GetDefaultInstrumentsAsync();            
+            if (!existing.Any(x => x.UserInstrumentId == instrument.UserInstrumentId))
+            {
+                return ServiceResult.Failure("Instrument not found");
+            }
+
+            ServiceResult validationResult = ValidateInstrument(existing, instrument);
             if (!validationResult.Success)
             {
                 return validationResult;
-            }
+            }                        
 
-            ServiceResult result = await _userInstrumentRepository.UpdateUserInstrumentAsync(userId, instrument);
+            ServiceResult result = await _userInstrumentRepository.UpdateDefaultInstrumentAsync(instrument);
+
             return result.Success
                 ? ServiceResult.Successful($"Instrument '{instrument.Name}' updated")
                 : result;
         }
 
-        private async Task<ServiceResult> ValidateInstrumentAsync(Guid? userId, UserInstrument instrument)
+        public async Task<ServiceResult> UpdateInstrumentAsync(Guid userId, UserInstrument instrument)
         {
-            if (userId == null)
+            IReadOnlyCollection<UserInstrument> existing = await _userInstrumentRepository.GetUserInstrumentsAsync(userId);
+            if (!existing.Any(x => x.UserInstrumentId == instrument.UserInstrumentId))
             {
-                return ServiceResult.Failure("Not permitted");
+                return ServiceResult.Failure("Instrument not found");
             }
 
+            ServiceResult validationResult = ValidateInstrument(existing, instrument);
+            if (!validationResult.Success)
+            {
+                return validationResult;
+            }
+            
+            ServiceResult result = await _userInstrumentRepository.UpdateUserInstrumentAsync(userId, instrument);
+
+            return result.Success
+                ? ServiceResult.Successful($"Instrument '{instrument.Name}' updated")
+                : result;
+        }
+
+        private ServiceResult ValidateInstrument(IReadOnlyCollection<UserInstrument> existing, UserInstrument instrument)
+        {
             if (string.IsNullOrEmpty(instrument.Name))
             {
                 return ServiceResult.Failure("Instrument name required");
             }
 
-            IReadOnlyCollection<UserInstrument> userInstruments = await _userInstrumentRepository.GetUserInstrumentsAsync(userId.Value);
-            if (userInstruments.Any(x => x.UserInstrumentId != instrument.UserInstrumentId && 
+            if (existing.Any(x => x.UserInstrumentId != instrument.UserInstrumentId && 
                                          string.Equals(x.Name, instrument.Name, StringComparison.InvariantCultureIgnoreCase)))
             {
                 return ServiceResult.Failure("An instrument with that name already exists");
