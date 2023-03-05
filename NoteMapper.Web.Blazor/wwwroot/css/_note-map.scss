@@ -11,6 +11,7 @@
     --nm-fretboard-padding: 0.4rem;
     --nm-fretboard-width-frets: 5%;
     --nm-modifier-backgroundcolor-hover: lightgoldenrodyellow;
+    --nm-modifier-enabled-backgroundcolor-hover: #9da87e;
 }
 
 .separator {
@@ -102,6 +103,10 @@
         cursor: pointer;
         opacity: 0.8;
         background-color: var(--nm-modifier-backgroundcolor-hover);
+    }
+
+    &.enabled.hover {
+        background-color: var(--nm-modifier-enabled-backgroundcolor-hover);        
     }
 }
 
