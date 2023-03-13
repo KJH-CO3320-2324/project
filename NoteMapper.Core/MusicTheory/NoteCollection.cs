@@ -8,17 +8,21 @@ namespace NoteMapper.Core.MusicTheory
         private readonly Lazy<IReadOnlyDictionary<int, Note>> _noteDictionary;
         private readonly IReadOnlyCollection<Note> _notes;
 
-        protected NoteCollection(IEnumerable<Note> notes)
+        protected NoteCollection(NoteCollectionType type, IEnumerable<Note> notes)
         {
             _notes = notes.ToArray();
             _noteDictionary = new Lazy<IReadOnlyDictionary<int, Note>>(() => _notes
                 .ToDictionary(x => x.NoteIndex)
                 .AsReadOnly());
+
+            Type = type;
         }
 
         public int Count => _notes.Count;
 
         public abstract Scale Key { get; }
+
+        public NoteCollectionType Type { get; }
 
         public bool Contains(Note note)
         {

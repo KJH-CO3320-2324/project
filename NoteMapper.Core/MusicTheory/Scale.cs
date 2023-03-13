@@ -8,15 +8,16 @@ namespace NoteMapper.Core.MusicTheory
 
         private static readonly IReadOnlyDictionary<ScaleType, string> KeyShortNames = CreateKeyShortNames();
 
-        private Scale(IEnumerable<Note> notes, ScaleType type)
-            : base(notes)
+        private Scale(IEnumerable<Note> notes, ScaleType scaleType)
+            : base(NoteCollectionType.Scale, notes)
         {
-            Type = type;
+            ScaleType = scaleType;
         }
 
         public override Scale Key => this;
 
-        public ScaleType Type { get; }
+        public ScaleType ScaleType { get; }
+
 
         public static Scale Parse(int noteIndex, ScaleType scaleType)
         {

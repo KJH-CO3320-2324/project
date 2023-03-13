@@ -3,7 +3,7 @@
     public class Chord : ScaleNoteCollection
     {
         private Chord(Scale scale, IEnumerable<int> noteIndexes)
-            : base(scale, noteIndexes)
+            : base(NoteCollectionType.Chord, scale, noteIndexes)
         {
         }
 
@@ -11,7 +11,7 @@
         {
             Scale scale = Scale.Parse(noteIndex, scaleType);
 
-            IEnumerable<int> notes = GetChordNotes(scale.Type);
+            IEnumerable<int> notes = GetChordNotes(scale.ScaleType);
 
             return new Chord(scale, notes);
         }

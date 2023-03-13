@@ -4,6 +4,8 @@
     {
         Scale Key { get; }
 
+        NoteCollectionType Type { get; }
+
         bool Contains(Note note);
 
         int IndexOf(Note note);

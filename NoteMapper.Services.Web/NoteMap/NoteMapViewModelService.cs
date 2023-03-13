@@ -61,7 +61,7 @@ namespace NoteMapper.Services.Web.NoteMap
                 InstrumentId = instrument,
                 Mode = parsedMode,
                 NoteIndex = noteIndex,
-                ScaleType = keyScale?.Type ?? ScaleType.Major,
+                ScaleType = keyScale?.ScaleType ?? ScaleType.Major,
                 Type = parsedType
             };
         }
@@ -90,8 +90,13 @@ namespace NoteMapper.Services.Web.NoteMap
                 return default;
             }
 
-            INoteCollection notes = Note.GetNotes(options.NoteIndex, options.ScaleType,
-                options.Type, options.CustomNotes);
+            INoteCollection notes = Note.GetNoteCollection(new NoteCollectionOptions
+            {
+                CustomNotes = options.CustomNotes,
+                NoteIndex = options.NoteIndex,
+                ScaleType = options.ScaleType,
+                Type = options.Type
+            });
 
             int frets = instrument.Strings.Max(x => x.Frets);
 
@@ -104,7 +109,7 @@ namespace NoteMapper.Services.Web.NoteMap
                 int threshold = options.Type == NoteCollectionType.Chord || options.Type == NoteCollectionType.Custom
                     ? notes.Count
                     : 1;
-                StringPermutationOptions permutationOptions = new(notes, fret, threshold);
+                StringPermutationOptions permutationOptions = new(notes, fret, threshold, options.MaxChordStringGap);
 
                 List<IReadOnlyCollection<GuitarStringNote?>> permutations = new();
 

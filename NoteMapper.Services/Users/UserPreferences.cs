@@ -5,15 +5,19 @@ namespace NoteMapper.Services.Users
 {
     public class UserPreferences
     {
-        public UserPreferences(AccidentalType accidental, bool intervals)
+        public UserPreferences(AccidentalType accidental, bool intervals,
+            int maxChordStringGap)
         {
             Accidental = accidental;
             Intervals = intervals;
+            MaxChordStringGap = maxChordStringGap;
         }
 
         public AccidentalType Accidental { get; set; }
 
         public bool Intervals { get; set; }
+
+        public int MaxChordStringGap { get; set; }
 
         public static UserPreferences FromCollection(IReadOnlyCollection<UserPreference> collection)
         {
@@ -33,7 +37,7 @@ namespace NoteMapper.Services.Users
                             bool.TryParse(dictionary[UserPreferenceType.Intervals], out bool parsedIntervals)
                                 ? parsedIntervals
                                 : false;
-            return new UserPreferences(accidental, intervals);
+            return new UserPreferences(accidental, intervals, 1);
         }
 
         public bool Equals(UserPreferences other)

@@ -60,6 +60,29 @@ namespace NoteMapper.Core.MusicTheory
             return naturalName + suffix;
         }
 
+        public static INoteCollection GetNoteCollection(NoteCollectionOptions options)
+        {
+            switch (options.Type)
+            {
+                case NoteCollectionType.Chord:
+                    return Chord.Parse(options.NoteIndex, options.ScaleType);
+                case NoteCollectionType.Custom:
+                    Scale scale = Scale.Parse(options.NoteIndex, options.ScaleType);
+                    return new ScaleNoteCollection(NoteCollectionType.Custom, scale, options.CustomNotes ?? Array.Empty<int>());
+                case NoteCollectionType.Scale:
+                    return Scale.Parse(options.NoteIndex, options.ScaleType);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(options.Type));
+            }
+        }
+
+        public static IReadOnlyCollection<int> GetNoteIndexes()
+        {
+            return Notes
+                .Select((x, i) => i)
+                .ToArray();
+        }
+
         public static IReadOnlyCollection<string> GetNotes(AccidentalType accidental)
         {
             string[] notes = new string[Notes.Count];
@@ -70,31 +93,7 @@ namespace NoteMapper.Core.MusicTheory
             }
 
             return notes;
-        }
-
-        public static IReadOnlyCollection<int> GetNoteIndexes()
-        {
-            return Notes
-                .Select((x, i) => i)
-                .ToArray();
-        }
-
-        public static INoteCollection GetNotes(int noteIndex, ScaleType scaleType, NoteCollectionType type,
-            IReadOnlyCollection<int> customNotes)
-        {
-            switch (type)
-            {
-                case NoteCollectionType.Chord:
-                    return Chord.Parse(noteIndex, scaleType);
-                case NoteCollectionType.Custom:
-                    Scale scale = Scale.Parse(noteIndex, scaleType);
-                    return new ScaleNoteCollection(scale, customNotes);
-                case NoteCollectionType.Scale:
-                    return Scale.Parse(noteIndex, scaleType);
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(type));
-            }
-        }
+        }              
 
         public static int GetNoteIndex(int index)
         {

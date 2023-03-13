@@ -19,8 +19,12 @@ namespace NoteMapper.Core.Tests.Instruments.Implementations
                 }                
             });
 
-            INoteCollection notes = Note.GetNotes(0, ScaleType.Major, NoteCollectionType.Chord, Array.Empty<int>());
-            StringPermutationOptions options = new(notes, 0, null);
+            INoteCollection notes = Note.GetNoteCollection(new NoteCollectionOptions
+            {
+                ScaleType = ScaleType.Major, 
+                Type = NoteCollectionType.Chord
+            });
+            StringPermutationOptions options = new(notes, 0, null, 0);
             IReadOnlyCollection<IReadOnlyCollection<GuitarStringNote?>> permutations = 
                 psg.GetPermutations(options).ToArray();
 
@@ -57,8 +61,12 @@ namespace NoteMapper.Core.Tests.Instruments.Implementations
                 }
             });
 
-            INoteCollection notes = Note.GetNotes(0, ScaleType.Major, NoteCollectionType.Chord, Array.Empty<int>());
-            StringPermutationOptions options = new(notes, 0, null);
+            INoteCollection notes = Note.GetNoteCollection(new NoteCollectionOptions
+            {
+                ScaleType = ScaleType.Major,
+                Type = NoteCollectionType.Chord
+            });
+            StringPermutationOptions options = new(notes, 0, null, 0);
             IReadOnlyCollection<IReadOnlyCollection<GuitarStringNote?>> permutations =
                 psg.GetPermutations(options).ToArray();
 
@@ -94,8 +102,12 @@ namespace NoteMapper.Core.Tests.Instruments.Implementations
                 }
             });
 
-            INoteCollection notes = Note.GetNotes(0, ScaleType.Major, NoteCollectionType.Chord, Array.Empty<int>());
-            StringPermutationOptions options = new(notes, 1, null);
+            INoteCollection notes = Note.GetNoteCollection(new NoteCollectionOptions
+            {
+                ScaleType = ScaleType.Major,
+                Type = NoteCollectionType.Chord
+            });
+            StringPermutationOptions options = new(notes, 1, null, 0);
             IReadOnlyCollection<IReadOnlyCollection<GuitarStringNote?>> permutations =
                 psg.GetPermutations(options).ToArray();
 

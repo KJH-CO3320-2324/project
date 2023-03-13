@@ -79,9 +79,7 @@ namespace NoteMapper.Core.Guitars
         {
             // the composition of the note, string, and possible modifier
             List<GuitarStringNote?> stringNotes = new();            
-            // which notes are being played in this permutation
-            HashSet<int> usedNotes = new();
-
+            
             for (int i = 0; i < Strings.Count; i++)
             {
                 // the current string
@@ -100,16 +98,75 @@ namespace NoteMapper.Core.Guitars
                     continue;
                 }
 
-                usedNotes.Add(note.NoteIndex);
-
                 GuitarStringNote stringNote = new(options.Fret, @string, modifier);
                 stringNotes.Add(stringNote);
             }
 
-            if (options.Notes.Count(x => usedNotes.Contains(x.NoteIndex)) < options.Threshold)
+            IReadOnlyCollection<int> usedNoteIndexes = stringNotes
+                .WhereNotNull()
+                .GroupBy(x => x.Note.NoteIndex)
+                .Select(x => x.Key)
+                .Distinct()
+                .ToArray();
+
+            if (usedNoteIndexes.Count < options.Threshold)
             {
                 // not enough notes were found, do not use this permutation
                 return Enumerable.Empty<GuitarStringNote?>();
+            }
+
+            if (options.Notes.Type == NoteCollectionType.Chord && options.MaxChordStringGap > 0)
+            {
+                // group the string indexes into clusters based on the max string gap
+                List<List<int>> stringIndexClusters = new List<List<int>>();
+                List<List<int>> noteIndexClusters = new List<List<int>>();
+                
+                for (int i = 0; i < stringNotes.Count; i++)
+                {
+                    GuitarStringNote? stringNote = stringNotes[i];
+                    if (stringNote == null)
+                    {
+                        continue;
+                    }
+
+                    List<int>? lastCluster = stringIndexClusters.LastOrDefault();
+
+                    if (lastCluster == null || 
+                        (i - lastCluster.Last()) > (options.MaxChordStringGap + 1))
+                    {
+                        // either this is first string note
+                        // or the current string note is too far away to be in the current cluster
+                        // Add a new cluster
+                        lastCluster = new List<int>();
+                        stringIndexClusters.Add(lastCluster);
+                        noteIndexClusters.Add(new List<int>());
+                    }
+
+                    lastCluster.Add(i);
+                    noteIndexClusters.Last().Add(stringNote.Note.NoteIndex);
+                }
+
+                // remove the string notes for the invalid clusters
+                for (int i = 0; i < stringIndexClusters.Count; i++)
+                {
+                    List<int> stringIndexCluster = stringIndexClusters[i];
+                    List<int> noteIndexCluster = noteIndexClusters[i];
+
+                    HashSet<int> uniqueNoteIndexes = new HashSet<int>(noteIndexCluster);
+
+                    if (uniqueNoteIndexes.Count < options.Threshold)
+                    {
+                        foreach (int stringIndex in stringIndexCluster)
+                        {
+                            stringNotes[stringIndex] = null;
+                        }
+                    }
+                }
+
+                if (stringNotes.All(x => x == null))
+                {
+                    return Enumerable.Empty<GuitarStringNote?>();
+                }
             }
 
             return stringNotes;
