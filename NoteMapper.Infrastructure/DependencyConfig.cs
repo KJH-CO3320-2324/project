@@ -9,6 +9,8 @@ using NoteMapper.Data.Core.Questionnaires;
 using NoteMapper.Data.Core.Users;
 using NoteMapper.Data.Cosmos;
 using NoteMapper.Data.Cosmos.Repositories;
+using NoteMapper.Data.Mongo;
+using NoteMapper.Data.Mongo.Repositories;
 using NoteMapper.Data.Sql.Repositories;
 using NoteMapper.Data.Sql.Repositories.Contact;
 using NoteMapper.Data.Sql.Repositories.Errors;
@@ -71,16 +73,36 @@ namespace NoteMapper.Infrastructure
                 .AddScoped<IUserRegistrationCodeRepository, UserRegistrationCodeSqlRepository>()
                 .AddScoped<IUserRepository, UserSqlRepository>();
 
-            container
-                .AddSingleton(new AzureCosmosRepositorySettings
-                {
-                    ApplicationName = config.GetValue("Application.Name"),
-                    ConnectionString = config.GetConnectionString("note-mapper-cosmos") ?? "",
-                    CurrentEnvironment = config.GetEnum<ApplicationEnvironment>("Environment"),
-                    DatabaseId = config.GetValue("Data.Azure.CosmosDB.DatabaseId"),
-                    DefaultUserId = config.GetValue("Data.Azure.CosmosDB.DefaultUserId")
-                })
-                .AddScoped<IUserInstrumentRepository, UserInstrumentAzureCosmosRepository>();
+            string documentStorageProvider = config.GetValue("Data.DocumentStorage.Provider");
+
+            if (string.Equals(documentStorageProvider, "AzureCosmos", StringComparison.InvariantCultureIgnoreCase))
+            {
+                container
+                    .AddSingleton(new AzureCosmosRepositorySettings
+                    {
+                        ApplicationName = config.GetValue("Application.Name"),
+                        ConnectionString = config.GetConnectionString("note-mapper-cosmos") ?? "",
+                        CurrentEnvironment = config.GetEnum<ApplicationEnvironment>("Environment"),
+                        DatabaseId = config.GetValue("Data.Azure.CosmosDB.DatabaseId"),
+                        DefaultUserId = config.GetValue("Data.Azure.CosmosDB.DefaultUserId")
+                    })
+                    .AddScoped<IUserInstrumentRepository, UserInstrumentAzureCosmosRepository>();
+            }            
+            else
+            {
+                // default to MongoDB
+
+                container
+                    .AddSingleton(new MongoRepositorySettings
+                    {
+                        ApplicationName = config.GetValue("Application.Name"),
+                        ConnectionString = config.GetConnectionString("note-mapper-mongo") ?? "",
+                        CurrentEnvironment = config.GetEnum<ApplicationEnvironment>("Environment"),
+                        DatabaseId = config.GetValue("Data.MongoDB.DatabaseId"),
+                        DefaultUserId = config.GetValue("Data.MongoDB.DefaultUserId")
+                    })
+                    .AddScoped<IUserInstrumentRepository, UserInstrumentMongoRepository>();                
+            }            
         }
 
         private static void RegisterIdentity(IDependencyContainer container, IConfiguration config)

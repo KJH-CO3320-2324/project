@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NoteMapper.Data.Core\NoteMapper.Data.Core.csproj" />
     <ProjectReference Include="..\NoteMapper.Data.Cosmos\NoteMapper.Data.Cosmos.csproj" />
+    <ProjectReference Include="..\NoteMapper.Data.Mongo\NoteMapper.Data.Mongo.csproj" />
     <ProjectReference Include="..\NoteMapper.Data.Sql\NoteMapper.Data.Sql.csproj" />
     <ProjectReference Include="..\NoteMapper.Emails\NoteMapper.Emails.csproj" />
     <ProjectReference Include="..\NoteMapper.Identity\NoteMapper.Identity.csproj" />
