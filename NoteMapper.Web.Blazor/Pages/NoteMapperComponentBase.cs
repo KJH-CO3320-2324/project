@@ -35,16 +35,6 @@ namespace NoteMapper.Web.Blazor.Pages
             return UserLocator.GetCurrentUserIdAsync();
         }
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                await JsRuntime.InvokeVoidAsync("pageLoad");
-            }
-            
-            await base.OnAfterRenderAsync(firstRender);
-        }        
-
         protected void RemoveFeedback()
         {
             SetData(null);

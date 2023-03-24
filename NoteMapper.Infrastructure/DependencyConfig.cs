@@ -51,10 +51,12 @@ namespace NoteMapper.Infrastructure
 
         private static void RegisterData(IDependencyContainer container, IConfiguration config)
         {
+            string sqlConnectionStringName = config.GetValue("Data.Sql.ConnectionStringName");
+
             container
                 .AddSingleton(new SqlRepositorySettings
                 {
-                    ConnectionString = config.GetConnectionString("note-mapper-sql") ?? "",
+                    ConnectionString = config.GetConnectionString(sqlConnectionStringName) ?? "",
                     CurrentEnvironment = config.GetEnum<ApplicationEnvironment>("Environment")
                 })
                 .AddScoped<IApplicationErrorRepository, ApplicationErrorSqlRepository>()
@@ -74,34 +76,38 @@ namespace NoteMapper.Infrastructure
                 .AddScoped<IUserRepository, UserSqlRepository>();
 
             string documentStorageProvider = config.GetValue("Data.DocumentStorage.Provider");
+            string connectionStringName = config.GetValue("Data.DocumentStorage.ConnectionStringName");
+            string connectionString = config.GetConnectionString(connectionStringName) ?? "";
 
-            if (string.Equals(documentStorageProvider, "AzureCosmos", StringComparison.InvariantCultureIgnoreCase))
-            {
-                container
-                    .AddSingleton(new AzureCosmosRepositorySettings
-                    {
-                        ApplicationName = config.GetValue("Application.Name"),
-                        ConnectionString = config.GetConnectionString("note-mapper-cosmos") ?? "",
-                        CurrentEnvironment = config.GetEnum<ApplicationEnvironment>("Environment"),
-                        DatabaseId = config.GetValue("Data.Azure.CosmosDB.DatabaseId"),
-                        DefaultUserId = config.GetValue("Data.Azure.CosmosDB.DefaultUserId")
-                    })
-                    .AddScoped<IUserInstrumentRepository, UserInstrumentAzureCosmosRepository>();
-            }            
-            else
-            {
-                // default to MongoDB
+            string applicationName = config.GetValue("Application.Name");
+            ApplicationEnvironment environment = config.GetEnum<ApplicationEnvironment>("Environment");
 
+            if (string.Equals(documentStorageProvider, "Mongo", StringComparison.InvariantCultureIgnoreCase))
+            {                
                 container
                     .AddSingleton(new MongoRepositorySettings
                     {
-                        ApplicationName = config.GetValue("Application.Name"),
-                        ConnectionString = config.GetConnectionString("note-mapper-mongo") ?? "",
-                        CurrentEnvironment = config.GetEnum<ApplicationEnvironment>("Environment"),
-                        DatabaseId = config.GetValue("Data.MongoDB.DatabaseId"),
-                        DefaultUserId = config.GetValue("Data.MongoDB.DefaultUserId")
+                        ApplicationName = applicationName,
+                        ConnectionString = connectionString,
+                        CurrentEnvironment = environment,
+                        DatabaseId = config.GetValue("Data.Mongo.DatabaseId"),
+                        DefaultUserId = config.GetValue("Data.Mongo.DefaultUserId")
                     })
                     .AddScoped<IUserInstrumentRepository, UserInstrumentMongoRepository>();                
+            }            
+            else
+            {
+                // default to Azure Cosmos
+                container
+                    .AddSingleton(new AzureCosmosRepositorySettings
+                    {
+                        ApplicationName = applicationName,
+                        ConnectionString = connectionString,
+                        CurrentEnvironment = environment,
+                        DatabaseId = config.GetValue("Data.Azure.Cosmos.DatabaseId"),
+                        DefaultUserId = config.GetValue("Data.Azure.Cosmos.DefaultUserId")
+                    })
+                    .AddScoped<IUserInstrumentRepository, UserInstrumentAzureCosmosRepository>();
             }            
         }
 
