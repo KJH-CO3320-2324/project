@@ -30,6 +30,15 @@ namespace NoteMapper.Data.Cosmos.Repositories
             return DeleteUserInstrumentAsync(DefaultUserId, userInstrumentId);
         }
 
+        public async Task<ServiceResult> DeleteUserAsync(Guid userId)
+        {
+            using (CosmosClient client = CreateClient())
+            {
+                Container container = GetContainer(client);
+                return await DeleteAsync(container, userId.ToString());
+            }            
+        }
+
         public Task<ServiceResult> DeleteUserInstrumentAsync(Guid userId, string userInstrumentId)
         {
             return DeleteUserInstrumentAsync(userId.ToString(), userInstrumentId);

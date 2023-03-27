@@ -79,7 +79,7 @@
 
     async Task DeleteQuestionnaireAsync(Guid questionnaireId)
     {
-        if (!await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this questionnaire?"))
+        if (!await ConfirmAsync("Are you sure you want to delete this questionnaire?"))
         {
             return;
         }

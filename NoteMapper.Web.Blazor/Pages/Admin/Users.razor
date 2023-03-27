@@ -2,7 +2,9 @@
 @inherits NoteMapperAdminComponentBase
 @attribute [Authorize]
 
-@using NoteMapper.Data.Core.Users;
+@using NoteMapper.Core
+@using NoteMapper.Data.Core.Users
+@using NoteMapper.Services.Feedback
 @using NoteMapper.Services.Users
 @using NoteMapper.Web.Blazor.Shared.Components
 
@@ -26,6 +28,8 @@
         <tr>
             <th>Email</th>
             <th>Created</th>
+            <th>Activated</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -34,11 +38,19 @@
             <tr>
                 <td>@user.Email</td>
                 <td>@user.CreatedUtc.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>@user.ActivatedUtc?.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                <td>
+                    <button class="btn btn-outline-danger btn-sm"
+                        @onclick="(e => DeleteUserAsync(user.UserId))">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </td>
             </tr>
         }
     </tbody>
 </table>
 
+@inject IFeedbackService FeedbackService
 @inject IUserAdminService UserAdminService
 @code {
     IReadOnlyCollection<User>? Model { get; set; }
@@ -46,6 +58,24 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+
+        Model = await UserAdminService.GetUsersAsync();
+    }
+
+    async Task DeleteUserAsync(Guid userId)
+    {
+        if (!await ConfirmAsync("Are you sure you want to delete this user?"))
+        {
+            return;
+        }
+
+        ServiceResult result = await UserAdminService.DeleteUserAsync(userId);        
+        FeedbackService.Notify(new FeedbackMessage(result));
+
+        if (!result.Success)
+        {
+            return;
+        }
 
         Model = await UserAdminService.GetUsersAsync();
     }

@@ -25,6 +25,11 @@ namespace NoteMapper.Web.Blazor.Pages
         protected IUserLocator UserLocator { get; set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
+        protected ValueTask<bool> ConfirmAsync(string message)
+        {
+            return JsRuntime.InvokeAsync<bool>("confirm", message);
+        }
+
         protected Task<User?> GetCurrentUserAsync()
         {
             return UserLocator.GetCurrentUserAsync();

@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using NoteMapper.Core;
 using NoteMapper.Data.Core.Errors;
+using NoteMapper.Data.Core.Instruments;
 
 namespace NoteMapper.Data.Cosmos
 {
@@ -36,6 +37,24 @@ namespace NoteMapper.Data.Cosmos
             };
 
             return new CosmosClient(_settings.ConnectionString, options);
+        }
+
+        protected async Task<ServiceResult> DeleteAsync(Container container, string id)
+        {
+            try
+            {
+                ItemResponse<UserInstruments> response = await container.DeleteItemAsync<UserInstruments>(id, new PartitionKey(id));
+                
+                bool success = (int)response.StatusCode >= 200 && (int)response.StatusCode <= 299;
+                return success
+                    ? ServiceResult.Successful()
+                    : ServiceResult.Failure("");
+            }            
+            catch (Exception ex)
+            {
+                await LogException(ex, id, "Delete");
+                return ServiceResult.Failure("Error deleting entity");
+            }
         }
 
         protected async Task<T?> FindAsync(Container container, string id)

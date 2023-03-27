@@ -31,6 +31,11 @@ namespace NoteMapper.Data.Mongo.Repositories
             return DeleteUserInstrumentAsync(DefaultUserId, userInstrumentId);
         }
 
+        public Task<ServiceResult> DeleteUserAsync(Guid userId)
+        {
+            return DeleteAsync(userId.ToString());
+        }
+
         public Task<ServiceResult> DeleteUserInstrumentAsync(Guid userId, string userInstrumentId)
         {
             return DeleteUserInstrumentAsync(userId.ToString(), userInstrumentId);

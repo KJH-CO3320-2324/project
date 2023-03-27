@@ -62,6 +62,22 @@ namespace NoteMapper.Data.Mongo
 
         protected abstract TDto MapEntity(T entity);
 
+        protected async Task<ServiceResult> DeleteAsync(string id)
+        {
+            try
+            {
+                IMongoCollection<BsonDocument> collection = GetCollection();
+                FilterDefinition<BsonDocument> filter = GetIdFilter(id);
+                DeleteResult result = await collection.DeleteOneAsync(filter);
+                return ServiceResult.Successful();
+            }
+            catch (Exception ex)
+            {
+                await LogException(ex, id, "Delete");
+                return ServiceResult.Failure("Error deleting document");
+            }
+        }
+
         protected async Task<ServiceResult> UpdateAsync(string id, T entity)
         {
             try

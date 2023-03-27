@@ -1,4 +1,6 @@
-﻿@using NoteMapper.Services.Web.ViewModels.Instruments;
+﻿@using NoteMapper.Services.Web.ViewModels.Instruments
+@using NoteMapper.Web.Blazor.Pages
+@inherits NoteMapperComponentBase
 
 @if (Model == null)
 {
@@ -128,7 +130,6 @@
     </table>
 </div>
 
-@inject IJSRuntime JsRuntime
 @code {
     [Parameter]
     public InstrumentEditViewModel? Model { get; set; }
@@ -138,7 +139,7 @@
 
     private async Task RemoveStringAsync(InstrumentStringViewModel s)
     {
-        if (!await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this string?"))
+        if (!await ConfirmAsync("Are you sure you want to delete this string?"))
         {
             return;
         }

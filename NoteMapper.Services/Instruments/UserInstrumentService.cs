@@ -1,7 +1,6 @@
 ﻿using NoteMapper.Core;
 using NoteMapper.Core.Guitars;
 using NoteMapper.Data.Core.Instruments;
-using NoteMapper.Services.Users;
 
 namespace NoteMapper.Services.Instruments
 {
