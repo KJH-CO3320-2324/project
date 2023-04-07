@@ -178,7 +178,7 @@ namespace NoteMapper.Data.Sql
         {
             switch (_settings.Provider)
             {
-                case "sqlserver":
+                case "sql":
                     return new SqlConnection(_settings.ConnectionString);
                 case "sqlite":
                     return new SQLiteConnection(_settings.ConnectionString);
