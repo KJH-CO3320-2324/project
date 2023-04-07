@@ -9,5 +9,7 @@ namespace NoteMapper.Data.Sql.Repositories
         public ApplicationEnvironment CurrentEnvironment { get; set; }
 
         public bool LogErrors { get; set; }
+
+        public string Provider { get; set; } = "";
     }
 }

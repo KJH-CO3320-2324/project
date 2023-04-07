@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using System.Data.SqlClient;
+using System.Data.Common;
 using NoteMapper.Core;
 using NoteMapper.Data.Core.Errors;
 using NoteMapper.Data.Core.Users;
@@ -23,18 +23,19 @@ namespace NoteMapper.Data.Sql.Repositories.Users
 
         public Task<UserPasswordResetCode?> CreateAsync(UserPasswordResetCode resetCode)
         {
-            string sql = $"INSERT INTO {TableName} (UserId, ExpiresUtc, Code) " +
-                         "VALUES (@UserId, @ExpiresUtc, @Code) " +
-                         $"SELECT TOP 1 {SelectColumnSql} " +
+            string sql = $"INSERT INTO {TableName} (UserPasswordResetCodeId, CreatedUtc, UserId, ExpiresUtc, Code) " +
+                         "VALUES (@UserPasswordResetCodeId, @CreatedUtc, @UserId, @ExpiresUtc, @Code); " +
+                         $"SELECT {SelectColumnSql} " +
                          $"FROM {TableName} " +
-                         $"WHERE UserId = @UserId " +
-                         "ORDER BY CreatedUtc DESC ";
+                         $"WHERE UserPasswordResetCodeId = @UserPasswordResetCodeId; ";
 
             return ReadSingleAsync(sql, new[]
             {
-                GetParameter("@UserId", resetCode.UserId, SqlDbType.UniqueIdentifier),
-                GetParameter("@ExpiresUtc", resetCode.ExpiresUtc, SqlDbType.DateTime),
-                GetParameter("@Code", resetCode.Code, SqlDbType.NVarChar)
+                GetParameter("@UserPasswordResetCodeId", Guid.NewGuid(), DbType.Guid),
+                GetParameter("@CreatedUtc", DateTime.UtcNow, DbType.DateTime),
+                GetParameter("@UserId", resetCode.UserId, DbType.Guid),
+                GetParameter("@ExpiresUtc", resetCode.ExpiresUtc, DbType.DateTime),
+                GetParameter("@Code", resetCode.Code, DbType.String)
             });
         }
 
@@ -45,24 +46,24 @@ namespace NoteMapper.Data.Sql.Repositories.Users
 
             return ExecuteQueryAsync(sql, new[]
             {
-                GetParameter("@UserId", userId, SqlDbType.UniqueIdentifier)
+                GetParameter("@UserId", userId, DbType.Guid)
             });
         }
 
         public Task<UserPasswordResetCode?> FindAsync(Guid userId, string code)
         {
-            string sql = $"SELECT TOP 1 {SelectColumnSql} " +
+            string sql = $"SELECT {SelectColumnSql} " +
                          $"FROM {TableName} " +
                          "WHERE UserId = @UserId AND Code = @Code";
 
             return ReadSingleAsync(sql, new[]
             {
-                GetParameter("@UserId", userId, SqlDbType.UniqueIdentifier),
-                GetParameter("@Code", code, SqlDbType.NVarChar)
+                GetParameter("@UserId", userId, DbType.Guid),
+                GetParameter("@Code", code, DbType.String)
             });
         }
 
-        protected override UserPasswordResetCode Map(SqlDataReader reader)
+        protected override UserPasswordResetCode Map(DbDataReader reader)
         {
             return new UserPasswordResetCode(reader.GetGuid(0),
                 reader.GetDateTime(1),

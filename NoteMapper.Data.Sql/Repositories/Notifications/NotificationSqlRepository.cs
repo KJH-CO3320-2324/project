@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Data;
+using System.Data.Common;
 using NoteMapper.Core;
 using NoteMapper.Data.Core.Errors;
 using NoteMapper.Data.Core.Notifications;
@@ -29,14 +24,16 @@ namespace NoteMapper.Data.Sql.Repositories.Notifications
 
         public Task<ServiceResult> CreateAsync(Notification notification)
         {
-            string sql = $"INSERT INTO {TableName} (Heading, ContentHtml, Active, HideForDays) " +
-                         "VALUES (@Heading, @ContentHtml, @Active, @HideForDays) ";
+            string sql = $"INSERT INTO {TableName} (NotificationId, CreatedUtc, Heading, ContentHtml, Active, HideForDays) " +
+                         "VALUES (@NotificationId, @CreatedUtc, @Heading, @ContentHtml, @Active, @HideForDays) ";
             return ExecuteQueryAsync(sql, new[]
             {
-                GetParameter("@Active", notification.Active, SqlDbType.Bit),
-                GetParameter("@ContentHtml", notification.ContentHtml, SqlDbType.NVarChar),
-                GetParameter("@Heading", notification.Heading, SqlDbType.NVarChar),
-                GetParameter("@HideForDays", notification.HideForDays, SqlDbType.Int)
+                GetParameter("@NotificationId", Guid.NewGuid(), DbType.Guid),
+                GetParameter("@CreatedUtc", DateTime.UtcNow, DbType.DateTime),
+                GetParameter("@Active", notification.Active, DbType.Boolean),
+                GetParameter("@ContentHtml", notification.ContentHtml, DbType.String),
+                GetParameter("@Heading", notification.Heading, DbType.String),
+                GetParameter("@HideForDays", notification.HideForDays, DbType.Int32)
             });
         }
 
@@ -46,7 +43,7 @@ namespace NoteMapper.Data.Sql.Repositories.Notifications
                          "WHERE NotificationId = @NotificationId ";
             return ExecuteQueryAsync(sql, new[]
             {
-                GetParameter("@NotificationId", notificationId, SqlDbType.UniqueIdentifier)
+                GetParameter("@NotificationId", notificationId, DbType.Guid)
             });
         }
 
@@ -57,7 +54,7 @@ namespace NoteMapper.Data.Sql.Repositories.Notifications
                          "WHERE NotificationId = @NotificationId ";
             return ReadSingleAsync(sql, new[]
             {
-                GetParameter("@NotificationId", notificationId, SqlDbType.UniqueIdentifier)
+                GetParameter("@NotificationId", notificationId, DbType.Guid)
             });
         }
 
@@ -67,14 +64,14 @@ namespace NoteMapper.Data.Sql.Repositories.Notifications
                          $"FROM {TableName} " +
                          "WHERE Active = 1 " +
                          "ORDER BY CreatedUtc ";
-            return ReadManyAsync(sql, Array.Empty<SqlParameter>());
+            return ReadManyAsync(sql, Array.Empty<DbParameter>());
         }
 
         public Task<IReadOnlyCollection<Notification>> GetAllAsync()
         {
             string sql = $"SELECT {SelectColumnSql} " +
                          $"FROM {TableName} ";
-            return ReadManyAsync(sql, Array.Empty<SqlParameter>());
+            return ReadManyAsync(sql, Array.Empty<DbParameter>());
         }
 
         public Task<ServiceResult> UpdateAsync(Notification notification)
@@ -84,15 +81,15 @@ namespace NoteMapper.Data.Sql.Repositories.Notifications
                          "WHERE NotificationId = @NotificationId ";
             return ExecuteQueryAsync(sql, new[]
             {
-                GetParameter("@NotificationId", notification.NotificationId, SqlDbType.UniqueIdentifier),
-                GetParameter("@Active", notification.Active, SqlDbType.Bit),
-                GetParameter("@ContentHtml", notification.ContentHtml, SqlDbType.NVarChar),
-                GetParameter("@Heading", notification.Heading, SqlDbType.NVarChar),
-                GetParameter("@HideForDays", notification.HideForDays, SqlDbType.Int)
+                GetParameter("@NotificationId", notification.NotificationId, DbType.Guid),
+                GetParameter("@Active", notification.Active, DbType.Boolean),
+                GetParameter("@ContentHtml", notification.ContentHtml, DbType.String),
+                GetParameter("@Heading", notification.Heading, DbType.String),
+                GetParameter("@HideForDays", notification.HideForDays, DbType.Int32)
             });
         }
 
-        protected override Notification Map(SqlDataReader reader)
+        protected override Notification Map(DbDataReader reader)
         {
             return new Notification(
                 reader.GetGuid(0),

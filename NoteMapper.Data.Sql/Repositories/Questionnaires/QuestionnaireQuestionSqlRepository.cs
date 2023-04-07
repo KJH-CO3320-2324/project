@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using NoteMapper.Core;
 using NoteMapper.Data.Core.Errors;
@@ -31,7 +32,7 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
 
             return ReadManyAsync(sql, new[]
             {
-                GetParameter("@QuestionnaireId", questionnaireId, SqlDbType.UniqueIdentifier)
+                GetParameter("@QuestionnaireId", questionnaireId, DbType.Guid)
             });
         }
 
@@ -40,7 +41,7 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
             IReadOnlyCollection<QuestionnaireQuestion> updateQuestions,
             IReadOnlyCollection<QuestionnaireQuestion> deleteQuestions)
         {
-            List<SqlParameter> parameters = new();
+            List<DbParameter> parameters = new();
 
             int questionIndex = 0;
 
@@ -53,7 +54,7 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
 
                     sql += $"DELETE {TableName} WHERE QuestionId = {parameterName}; ";
 
-                    parameters.Add(GetParameter(parameterName, deleteQuestion.QuestionId, SqlDbType.UniqueIdentifier));
+                    parameters.Add(GetParameter(parameterName, deleteQuestion.QuestionId, DbType.Guid));
 
                     questionIndex++;
                 }
@@ -76,13 +77,13 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
 
                     parameters.AddRange(new[]
                     {
-                        GetParameter(parameterName, updateQuestion.QuestionId, SqlDbType.UniqueIdentifier),
-                        GetParameter($"@QuestionText{questionIndex}", updateQuestion.QuestionText, SqlDbType.NVarChar),
-                        GetParameter($"@QuestionType{questionIndex}", (int)updateQuestion.Type, SqlDbType.Int),
-                        GetParameter($"@Required{questionIndex}", updateQuestion.Required, SqlDbType.Bit),
-                        GetParameter($"@MinValue{questionIndex}", updateQuestion.MinValue, SqlDbType.Int),
-                        GetParameter($"@MaxValue{questionIndex}", updateQuestion.MaxValue, SqlDbType.Int),
-                        GetParameter($"@DisplayOrder{questionIndex}", updateQuestion.DisplayOrder, SqlDbType.Int)
+                        GetParameter(parameterName, updateQuestion.QuestionId, DbType.Guid),
+                        GetParameter($"@QuestionText{questionIndex}", updateQuestion.QuestionText, DbType.String),
+                        GetParameter($"@QuestionType{questionIndex}", (int)updateQuestion.Type, DbType.Int32),
+                        GetParameter($"@Required{questionIndex}", updateQuestion.Required, DbType.Boolean),
+                        GetParameter($"@MinValue{questionIndex}", updateQuestion.MinValue, DbType.Int32),
+                        GetParameter($"@MaxValue{questionIndex}", updateQuestion.MaxValue, DbType.Int32),
+                        GetParameter($"@DisplayOrder{questionIndex}", updateQuestion.DisplayOrder, DbType.Int32)
                     });
 
                     questionIndex++;
@@ -93,9 +94,9 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
             {
                 foreach (QuestionnaireQuestion insertQuestion in insertQuestions)
                 {
-                    sql += $"INSERT INTO {TableName} (QuestionnaireId, QuestionText, QuestionTypeId, Required, " +
+                    sql += $"INSERT INTO {TableName} (QuestionId, QuestionnaireId, QuestionText, QuestionTypeId, Required, " +
                                  $"MinValue, MaxValue, DisplayOrder) " +
-                                 $"VALUES(@QuestionnaireId{questionIndex}, @QuestionText{questionIndex}, " +
+                                 $"VALUES(@QuestionId{questionIndex}, @QuestionnaireId{questionIndex}, @QuestionText{questionIndex}, " +
                                  $"@QuestionType{questionIndex}, " +
                                  $"@Required{questionIndex}, " +
                                  $"@MinValue{questionIndex}, " +
@@ -104,13 +105,14 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
 
                     parameters.AddRange(new[]
                     {
-                        GetParameter($"@QuestionnaireId{questionIndex}", insertQuestion.QuestionnaireId, SqlDbType.UniqueIdentifier),
-                        GetParameter($"@QuestionText{questionIndex}", insertQuestion.QuestionText, SqlDbType.NVarChar),
-                        GetParameter($"@QuestionType{questionIndex}", (int)insertQuestion.Type, SqlDbType.Int),
-                        GetParameter($"@Required{questionIndex}", insertQuestion.Required, SqlDbType.Bit),
-                        GetParameter($"@MinValue{questionIndex}", insertQuestion.MinValue, SqlDbType.Int),
-                        GetParameter($"@MaxValue{questionIndex}", insertQuestion.MaxValue, SqlDbType.Int),
-                        GetParameter($"@DisplayOrder{questionIndex}", insertQuestion.DisplayOrder, SqlDbType.Int)
+                        GetParameter($"@QuestionId{questionIndex}", Guid.NewGuid(), DbType.Guid),
+                        GetParameter($"@QuestionnaireId{questionIndex}", insertQuestion.QuestionnaireId, DbType.Guid),
+                        GetParameter($"@QuestionText{questionIndex}", insertQuestion.QuestionText, DbType.String),
+                        GetParameter($"@QuestionType{questionIndex}", (int)insertQuestion.Type, DbType.Int32),
+                        GetParameter($"@Required{questionIndex}", insertQuestion.Required, DbType.Boolean),
+                        GetParameter($"@MinValue{questionIndex}", insertQuestion.MinValue, DbType.Int32),
+                        GetParameter($"@MaxValue{questionIndex}", insertQuestion.MaxValue, DbType.Int32),
+                        GetParameter($"@DisplayOrder{questionIndex}", insertQuestion.DisplayOrder, DbType.Int32)
                     });
 
                     questionIndex++;
@@ -120,7 +122,7 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
             return ExecuteQueryAsync(sql, parameters);
         }
 
-        protected override QuestionnaireQuestion Map(SqlDataReader reader)
+        protected override QuestionnaireQuestion Map(DbDataReader reader)
         {
             return new QuestionnaireQuestion(
                 reader.GetGuid(0),

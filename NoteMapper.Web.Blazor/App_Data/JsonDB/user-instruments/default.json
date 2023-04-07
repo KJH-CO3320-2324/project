@@ -1,0 +1,355 @@
+{
+    "id": "default",
+    "instruments": [
+        {
+            "frets": 12,
+            "modifiers": [
+                {
+                    "mutuallyExclusive": [
+                        "C"
+                    ],
+                    "name": "A",
+                    "offsets": [
+                        {
+                            "offset": 2,
+                            "string": 4
+                        },
+                        {
+                            "offset": 2,
+                            "string": 9
+                        }
+                    ],
+                    "type": "Pedal"
+                },
+                {
+                    "mutuallyExclusive": null,
+                    "name": "B",
+                    "offsets": [
+                        {
+                            "offset": 1,
+                            "string": 2
+                        },
+                        {
+                            "offset": 1,
+                            "string": 5
+                        }
+                    ],
+                    "type": "Pedal"
+                },
+                {
+                    "mutuallyExclusive": null,
+                    "name": "C",
+                    "offsets": [
+                        {
+                            "offset": 2,
+                            "string": 3
+                        },
+                        {
+                            "offset": 2,
+                            "string": 4
+                        }
+                    ],
+                    "type": "Pedal"
+                },
+                {
+                    "mutuallyExclusive": [
+                        "LKR"
+                    ],
+                    "name": "LKL",
+                    "offsets": [
+                        {
+                            "offset": -1,
+                            "string": 3
+                        },
+                        {
+                            "offset": -1,
+                            "string": 7
+                        }
+                    ],
+                    "type": "Lever"
+                },
+                {
+                    "mutuallyExclusive": null,
+                    "name": "LKR",
+                    "offsets": [
+                        {
+                            "offset": 1,
+                            "string": 3
+                        },
+                        {
+                            "offset": 1,
+                            "string": 7
+                        }
+                    ],
+                    "type": "Lever"
+                },
+                {
+                    "mutuallyExclusive": [
+                        "RKR"
+                    ],
+                    "name": "RKL",
+                    "offsets": [
+                        {
+                            "offset": 1,
+                            "string": 0
+                        },
+                        {
+                            "offset": -2,
+                            "string": 5
+                        }
+                    ],
+                    "type": "Lever"
+                },
+                {
+                    "mutuallyExclusive": null,
+                    "name": "RKR",
+                    "offsets": [
+                        {
+                            "offset": -2,
+                            "string": 1
+                        },
+                        {
+                            "offset": -1,
+                            "string": 8
+                        }
+                    ],
+                    "type": "Lever"
+                }
+            ],
+            "name": "E9 (Emmons)",
+            "strings": [
+                {
+                    "noteIndex": 6,
+                    "octaveIndex": 4
+                },
+                {
+                    "noteIndex": 3,
+                    "octaveIndex": 4
+                },
+                {
+                    "noteIndex": 8,
+                    "octaveIndex": 4
+                },
+                {
+                    "noteIndex": 4,
+                    "octaveIndex": 4
+                },
+                {
+                    "noteIndex": 11,
+                    "octaveIndex": 3
+                },
+                {
+                    "noteIndex": 8,
+                    "octaveIndex": 3
+                },
+                {
+                    "noteIndex": 6,
+                    "octaveIndex": 3
+                },
+                {
+                    "noteIndex": 4,
+                    "octaveIndex": 3
+                },
+                {
+                    "noteIndex": 2,
+                    "octaveIndex": 3
+                },
+                {
+                    "noteIndex": 11,
+                    "octaveIndex": 2
+                }
+            ],
+            "type": 1,
+            "userId": "5ef19b01-0448-4497-8a1c-08dad7a6ac93",
+            "userInstrumentId": "cd7bb33e-e79d-4819-971d-e0635c99e963"
+        },
+        {
+            "frets": 12,
+            "modifiers": [
+                {
+                    "mutuallyExclusive": [
+                        "6",
+                        "7",
+                        "8"
+                    ],
+                    "name": "4",
+                    "offsets": [
+                        {
+                            "offset": 2,
+                            "string": 3
+                        },
+                        {
+                            "offset": 2,
+                            "string": 7
+                        }
+                    ],
+                    "type": "Pedal"
+                },
+                {
+                    "mutuallyExclusive": [
+                        "7",
+                        "8"
+                    ],
+                    "name": "5",
+                    "offsets": [
+                        {
+                            "offset": 1,
+                            "string": 0
+                        },
+                        {
+                            "offset": -1,
+                            "string": 4
+                        },
+                        {
+                            "offset": 1,
+                            "string": 8
+                        },
+                        {
+                            "offset": 2,
+                            "string": 9
+                        }
+                    ],
+                    "type": "Pedal"
+                },
+                {
+                    "mutuallyExclusive": [
+                        "8"
+                    ],
+                    "name": "6",
+                    "offsets": [
+                        {
+                            "offset": 1,
+                            "string": 1
+                        },
+                        {
+                            "offset": -1,
+                            "string": 5
+                        }
+                    ],
+                    "type": "Pedal"
+                },
+                {
+                    "mutuallyExclusive": null,
+                    "name": "7",
+                    "offsets": [
+                        {
+                            "offset": 2,
+                            "string": 2
+                        },
+                        {
+                            "offset": 2,
+                            "string": 3
+                        }
+                    ],
+                    "type": "Pedal"
+                },
+                {
+                    "mutuallyExclusive": [
+                        "LKL"
+                    ],
+                    "name": "8",
+                    "offsets": [
+                        {
+                            "offset": 1,
+                            "string": 6
+                        },
+                        {
+                            "offset": -1,
+                            "string": 8
+                        },
+                        {
+                            "offset": -3,
+                            "string": 9
+                        }
+                    ],
+                    "type": "Pedal"
+                },
+                {
+                    "mutuallyExclusive": null,
+                    "name": "LKL",
+                    "offsets": [
+                        {
+                            "offset": -1,
+                            "string": 3
+                        }
+                    ],
+                    "type": "Lever"
+                },
+                {
+                    "mutuallyExclusive": [
+                        "RKR"
+                    ],
+                    "name": "RKL",
+                    "offsets": [
+                        {
+                            "offset": 1,
+                            "string": 2
+                        },
+                        {
+                            "offset": 1,
+                            "string": 6
+                        }
+                    ],
+                    "type": "Lever"
+                },
+                {
+                    "mutuallyExclusive": null,
+                    "name": "RKR",
+                    "offsets": [
+                        {
+                            "offset": -1,
+                            "string": 2
+                        }
+                    ],
+                    "type": "Lever"
+                }
+            ],
+            "name": "C6 (Emmons)",
+            "strings": [
+                {
+                    "noteIndex": 2,
+                    "octaveIndex": 3
+                },
+                {
+                    "noteIndex": 4,
+                    "octaveIndex": 3
+                },
+                {
+                    "noteIndex": 0,
+                    "octaveIndex": 3
+                },
+                {
+                    "noteIndex": 9,
+                    "octaveIndex": 2
+                },
+                {
+                    "noteIndex": 7,
+                    "octaveIndex": 2
+                },
+                {
+                    "noteIndex": 4,
+                    "octaveIndex": 2
+                },
+                {
+                    "noteIndex": 0,
+                    "octaveIndex": 2
+                },
+                {
+                    "noteIndex": 9,
+                    "octaveIndex": 1
+                },
+                {
+                    "noteIndex": 5,
+                    "octaveIndex": 1
+                },
+                {
+                    "noteIndex": 0,
+                    "octaveIndex": 1
+                }
+            ],
+            "type": 1,
+            "userId": "5ef19b01-0448-4497-8a1c-08dad7a6ac93",
+            "userInstrumentId": "3b22d753-3438-4c39-967a-a295f55a260a"
+        }
+    ]    
+}

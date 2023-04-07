@@ -81,10 +81,12 @@
     private async Task HandleValidSubmitAsync()
     {
         Loading = true;
+        await InvokeAsync(StateHasChanged);
 
         ServiceResult result = await IdentityService.RegisterUserAsync(Model.Email, Model.Code);
         Feedback = FeedbackViewModel.FromServiceResult(result);
 
         Loading = false;
+        await InvokeAsync(StateHasChanged);
     }
 }

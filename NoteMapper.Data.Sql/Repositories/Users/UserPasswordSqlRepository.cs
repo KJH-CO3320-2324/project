@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using System.Data.SqlClient;
+using System.Data.Common;
 using NoteMapper.Core;
 using NoteMapper.Data.Core.Errors;
 using NoteMapper.Data.Core.Users;
@@ -23,39 +23,35 @@ namespace NoteMapper.Data.Sql.Repositories.Users
 
         public Task<UserPassword?> FindAsync(Guid userId)
         {
-            string sql = $"SELECT TOP 1 {SelectColumnSql} " +
+            string sql = $"SELECT {SelectColumnSql} " +
                          $"FROM {TableName} " +
                          $"WHERE UserId = @UserId ";
 
             return ReadSingleAsync(sql, new[]
             {
-                GetParameter("@UserId", userId, SqlDbType.UniqueIdentifier)
+                GetParameter("@UserId", userId, DbType.Guid)
             });
         }
 
         public Task<ServiceResult> UpdateAsync(UserPassword userPassword)
         {
-            string insertSql = $"INSERT INTO {TableName} (UserId, Hash, Salt) " +
-                               "VALUES (@UserId, @Hash, @Salt) ";
-
-            string updateSql = $"UPDATE {TableName} " +
-                               "SET Hash = @Hash, Salt = @Salt " +
-                               "WHERE UserId = @UserId";
-
-            string sql = $"IF NOT EXISTS(SELECT * FROM {TableName} WHERE UserId = @UserId) " +
-                         insertSql + 
-                         " ELSE " + 
-                         updateSql;
+            string sql = $"UPDATE {TableName} " +
+                         "SET Hash = @Hash, Salt = @Salt " +
+                         "WHERE UserId = @UserId; " +
+                         $"INSERT INTO {TableName} (UserPasswordId, UserId, Hash, Salt) " +
+                         "SELECT @UserPasswordId, @UserId, @Hash, @Salt " +
+                         $"WHERE NOT EXISTS(SELECT * FROM {TableName} WHERE UserId = @UserId); ";            
 
             return ExecuteQueryAsync(sql, new[]
             {
-                GetParameter("@UserId", userPassword.UserId, SqlDbType.UniqueIdentifier),
-                GetParameter("@Hash", userPassword.Hash, SqlDbType.NVarChar),
-                GetParameter("@Salt", userPassword.Salt, SqlDbType.NVarChar)
+                GetParameter("@UserPasswordId", Guid.NewGuid(), DbType.Guid),
+                GetParameter("@UserId", userPassword.UserId, DbType.Guid),
+                GetParameter("@Hash", userPassword.Hash, DbType.String),
+                GetParameter("@Salt", userPassword.Salt, DbType.String)
             });
         }
 
-        protected override UserPassword Map(SqlDataReader reader)
+        protected override UserPassword Map(DbDataReader reader)
         {
             return new UserPassword(reader.GetGuid(0),
                 reader.GetString(1),

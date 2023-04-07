@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using System.Data.SqlClient;
+using System.Data.Common;
 using NoteMapper.Core;
 using NoteMapper.Data.Core.Errors;
 using NoteMapper.Data.Core.Users;
@@ -29,16 +29,16 @@ namespace NoteMapper.Data.Sql.Repositories.Users
 
             return ReadManyAsync(sql, new[]
             {
-                GetParameter("@UserId", userId, SqlDbType.UniqueIdentifier)
+                GetParameter("@UserId", userId, DbType.Guid)
             });
         }
 
         public Task<ServiceResult> UpdateAsync(Guid userId, IReadOnlyCollection<UserPreference> preferences)
         {
             string sql = "";
-            List<SqlParameter> parameters = new()
+            List<DbParameter> parameters = new()
             {
-                GetParameter("@UserId", userId, SqlDbType.UniqueIdentifier)
+                GetParameter("@UserId", userId, DbType.Guid)
             };
 
             for (int i = 0; i < preferences.Count; i++)
@@ -48,28 +48,28 @@ namespace NoteMapper.Data.Sql.Repositories.Users
                 sql += "IF NOT EXISTS( " +
                        "    SELECT * " +
                        "    FROM UserPreferences " +
-                       $"    WHERE UserId = @UserId AND UserPreferenceTypeId = @Type{i}) " +
+                       $"   WHERE UserId = @UserId AND UserPreferenceTypeId = @Type{i}) " +
                        "BEGIN " +
                        "    INSERT INTO UserPreferences (UserId, UserPreferenceTypeId, Value) " +
-                       $"    VALUES (@UserId, @Type{i}, @Value{i}) " +
+                       $"   VALUES (@UserId, @Type{i}, @Value{i}); " +
                        "END " +
                        "ELSE " +
                        "BEGIN " +
                        $"    UPDATE UserPreferences SET Value = @Value{i} " +
-                       $"    WHERE UserId = @UserId AND UserPreferenceTypeId = @Type{i} " +
+                       $"    WHERE UserId = @UserId AND UserPreferenceTypeId = @Type{i}; " +
                        "END; ";
 
                 parameters.AddRange(new[]
                 {
-                    GetParameter($"@Type{i}", (int)preference.Type, SqlDbType.Int),
-                    GetParameter($"@Value{i}", preference.Value, SqlDbType.NVarChar)
+                    GetParameter($"@Type{i}", (int)preference.Type, DbType.Int32),
+                    GetParameter($"@Value{i}", preference.Value, DbType.String)
                 });
             }
 
             return ExecuteQueryAsync(sql, parameters);
         }
 
-        protected override UserPreference Map(SqlDataReader reader)
+        protected override UserPreference Map(DbDataReader reader)
         {
             return new UserPreference((UserPreferenceType)reader.GetInt32(0),
                 reader.GetString(1));

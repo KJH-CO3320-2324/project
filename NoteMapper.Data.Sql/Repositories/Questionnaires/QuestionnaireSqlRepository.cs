@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using System.Data.SqlClient;
+using System.Data.Common;
 using NoteMapper.Core;
 using NoteMapper.Data.Core.Errors;
 using NoteMapper.Data.Core.Questionnaires;
@@ -24,19 +24,21 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
 
         public Task<Questionnaire?> CreateAsync(Questionnaire questionnaire)
         {
-            string sql = $"INSERT INTO {TableName} (Name, ExpiresUtc, Active, LinkText, IntroText) " +
-                         $"VALUES (@Name, @ExpiresUtc, @Active, @LinkText, @IntroText); " +
-                         $"SELECT TOP 1 {SelectColumnSql} " +
+            string sql = $"INSERT INTO {TableName} (QuestionnaireId, CreatedUtc, Name, ExpiresUtc, Active, LinkText, IntroText) " +
+                         $"VALUES (@QuestionnaireId, @CreatedUtc, @Name, @ExpiresUtc, @Active, @LinkText, @IntroText); " +
+                         $"SELECT {SelectColumnSql} " +
                          $"FROM {TableName} " +
-                         $"WHERE Name = @Name ";
+                         $"WHERE QuestionnaireId = @QuestionnaireId; ";
 
             return ReadSingleAsync(sql, new[]
             {
-                GetParameter("@Name", questionnaire.Name, SqlDbType.NVarChar),
-                GetParameter("@ExpiresUtc", questionnaire.ExpiresUtc, SqlDbType.DateTime),
-                GetParameter("@Active", questionnaire.Active, SqlDbType.Bit),
-                GetParameter("@LinkText", questionnaire.LinkText, SqlDbType.NVarChar),
-                GetParameter("@IntroText", questionnaire.IntroText, SqlDbType.NVarChar)
+                GetParameter("@QuestionnaireId", Guid.NewGuid(), DbType.Guid),
+                GetParameter("@CreatedUtc", DateTime.UtcNow, DbType.DateTime),
+                GetParameter("@Name", questionnaire.Name, DbType.String),
+                GetParameter("@ExpiresUtc", questionnaire.ExpiresUtc, DbType.DateTime),
+                GetParameter("@Active", questionnaire.Active, DbType.Boolean),
+                GetParameter("@LinkText", questionnaire.LinkText, DbType.String),
+                GetParameter("@IntroText", questionnaire.IntroText, DbType.String)
             });
         }
 
@@ -46,7 +48,7 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
 
             return ExecuteQueryAsync(sql, new[]
             {
-                GetParameter("@QuestionnaireId", questionnaireId, SqlDbType.UniqueIdentifier)
+                GetParameter("@QuestionnaireId", questionnaireId, DbType.Guid)
             });
         }
 
@@ -58,7 +60,7 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
 
             return ReadSingleAsync(sql, new[]
             {
-                GetParameter("@QuestionnaireId", questionnaireId, SqlDbType.UniqueIdentifier)
+                GetParameter("@QuestionnaireId", questionnaireId, DbType.Guid)
             });
         }
 
@@ -68,17 +70,20 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
                          $"FROM {TableName} " +
                          $"ORDER BY CreatedUtc DESC ";
 
-            return ReadManyAsync(sql, Array.Empty<SqlParameter>());
+            return ReadManyAsync(sql, Array.Empty<DbParameter>());
         }
 
         public Task<Questionnaire?> GetCurrentAsync()
         {
-            string sql = $"SELECT TOP 1 {SelectColumnSql} " +
+            string sql = $"SELECT {SelectColumnSql} " +
                          $"FROM {TableName} " +
-                         $"WHERE Active = 1 AND (ExpiresUtc IS NULL OR ExpiresUtc > GETUTCDATE()) " +
+                         $"WHERE Active = 1 AND (ExpiresUtc IS NULL OR ExpiresUtc > @Now) " +
                          $"ORDER BY CreatedUtc DESC ";
 
-            return ReadSingleAsync(sql, Array.Empty<SqlParameter>());
+            return ReadSingleAsync(sql, new[]
+            {
+                GetParameter("@Now", DateTime.UtcNow, DbType.DateTime)
+            });
         }
 
         public async Task<IDictionary<Guid, int>> GetQuestionnaireRespondentCountsAsync()
@@ -92,14 +97,14 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
                          $" )" +
                          $"FROM {TableName} ";
 
-            Func<SqlDataReader, KeyValuePair<Guid, int>> map = reader =>
+            Func<DbDataReader, KeyValuePair<Guid, int>> map = reader =>
             {
                 Guid questionnaireId = reader.GetGuid(0);
                 int respondents = reader.GetInt32(1);
                 return new KeyValuePair<Guid, int>(questionnaireId, respondents);
             };
 
-            IReadOnlyCollection<KeyValuePair<Guid, int>> responseCounts = await ReadManyAsync(sql, Array.Empty<SqlParameter>(), map);
+            IReadOnlyCollection<KeyValuePair<Guid, int>> responseCounts = await ReadManyAsync(sql, Array.Empty<DbParameter>(), map);
             return new Dictionary<Guid, int>(responseCounts);
         }
 
@@ -112,16 +117,16 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
 
             return ExecuteQueryAsync(sql, new[]
             {
-                GetParameter("@QuestionnaireId", questionnaire.QuestionnaireId, SqlDbType.UniqueIdentifier),
-                GetParameter("@Name", questionnaire.Name, SqlDbType.NVarChar),
-                GetParameter("@ExpiresUtc", questionnaire.ExpiresUtc, SqlDbType.DateTime),
-                GetParameter("@Active", questionnaire.Active, SqlDbType.Bit),
-                GetParameter("@LinkText", questionnaire.LinkText, SqlDbType.NVarChar),
-                GetParameter("@IntroText", questionnaire.IntroText, SqlDbType.NVarChar)
+                GetParameter("@QuestionnaireId", questionnaire.QuestionnaireId, DbType.Guid),
+                GetParameter("@Name", questionnaire.Name, DbType.String),
+                GetParameter("@ExpiresUtc", questionnaire.ExpiresUtc, DbType.DateTime),
+                GetParameter("@Active", questionnaire.Active, DbType.Boolean),
+                GetParameter("@LinkText", questionnaire.LinkText, DbType.String),
+                GetParameter("@IntroText", questionnaire.IntroText, DbType.String)
             });
         }
 
-        protected override Questionnaire Map(SqlDataReader reader)
+        protected override Questionnaire Map(DbDataReader reader)
         {
             return new Questionnaire(
                 reader.GetGuid(0),

@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using System.Data.SqlClient;
+using System.Data.Common;
 using NoteMapper.Core;
 using NoteMapper.Data.Core.Errors;
 using NoteMapper.Data.Core.Users;
@@ -30,23 +30,24 @@ namespace NoteMapper.Data.Sql.Repositories.Users
 
             return ExecuteQueryAsync(sql, new[]
             {
-                GetParameter("@ActivatedUtc", user.ActivatedUtc, SqlDbType.DateTime),
-                GetParameter("@UserId", user.UserId, SqlDbType.UniqueIdentifier)
+                GetParameter("@ActivatedUtc", user.ActivatedUtc, DbType.DateTime),
+                GetParameter("@UserId", user.UserId, DbType.Guid)
             });
         }
 
         public Task<User?> CreateAsync(User user)
         {
-            string sql = $"INSERT INTO {TableName} (CreatedUtc, Email) " +
-                         "VALUES (@CreatedUtc, @Email)" +
-                         $"SELECT TOP 1 {SelectColumnSql} " +
+            string sql = $"INSERT INTO {TableName} (UserId, CreatedUtc, Email) " +
+                         "VALUES (@UserId, @CreatedUtc, @Email); " +
+                         $"SELECT {SelectColumnSql} " +
                          $"FROM {TableName} " +
-                         $"WHERE Email = @Email";
+                         $"WHERE UserId = @UserId; ";
 
             return ReadSingleAsync(sql, new[]
             {
-                GetParameter("@CreatedUtc", user.CreatedUtc, SqlDbType.DateTime),
-                GetParameter("@Email", user.Email, SqlDbType.NVarChar)
+                GetParameter("@UserId", Guid.NewGuid(), DbType.Guid),
+                GetParameter("@CreatedUtc", user.CreatedUtc, DbType.DateTime),
+                GetParameter("@Email", user.Email, DbType.String)
             });
         }
 
@@ -57,31 +58,31 @@ namespace NoteMapper.Data.Sql.Repositories.Users
 
             return ExecuteQueryAsync(sql, new[]
             {
-                GetParameter("@UserId", userId, SqlDbType.UniqueIdentifier)
+                GetParameter("@UserId", userId, DbType.Guid)
             });
         }
 
         public Task<User?> FindAsync(Guid userId)
         {
-            string sql = $"SELECT TOP 1 {SelectColumnSql} " +
+            string sql = $"SELECT {SelectColumnSql} " +
                          $"FROM {TableName} " +
                          $"WHERE UserId = @UserId";
 
             return ReadSingleAsync(sql, new[]
             {
-                GetParameter("@UserId", userId, SqlDbType.UniqueIdentifier)
+                GetParameter("@UserId", userId, DbType.Guid)
             });
         }
 
         public Task<User?> FindByEmailAsync(string email)
         {
-            string sql = $"SELECT TOP 1 {SelectColumnSql} " +
+            string sql = $"SELECT {SelectColumnSql} " +
                          $"FROM {TableName} " +
                          $"WHERE Email = @Email";
 
             return ReadSingleAsync(sql, new[]
             {
-                GetParameter("@Email", email, SqlDbType.NVarChar)
+                GetParameter("@Email", email, DbType.String)
             });
         }
 
@@ -90,10 +91,10 @@ namespace NoteMapper.Data.Sql.Repositories.Users
             string sql = $"SELECT {SelectColumnSql} " +
                          $"FROM {TableName} ";
 
-            return ReadManyAsync(sql, Array.Empty<SqlParameter>());
+            return ReadManyAsync(sql, Array.Empty<DbParameter>());
         }
 
-        protected override User Map(SqlDataReader reader)
+        protected override User Map(DbDataReader reader)
         {
             return new User(reader.GetGuid(0),
                 reader.GetDateTime(1),

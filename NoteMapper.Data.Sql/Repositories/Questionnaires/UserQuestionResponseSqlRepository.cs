@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using System.Data.SqlClient;
+using System.Data.Common;
 using NoteMapper.Core;
 using NoteMapper.Data.Core.Errors;
 using NoteMapper.Data.Core.Questionnaires;
@@ -32,8 +32,8 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
 
             return ReadManyAsync(sql, new[]
             {
-                GetParameter("@UserId", userId, SqlDbType.UniqueIdentifier),
-                GetParameter("@QuestionnaireId", questionnaireId, SqlDbType.UniqueIdentifier)
+                GetParameter("@UserId", userId, DbType.Guid),
+                GetParameter("@QuestionnaireId", questionnaireId, DbType.Guid)
             });
         }
 
@@ -46,7 +46,10 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
 
             string sql = "";
 
-            List<SqlParameter> parameters = new();
+            List<DbParameter> parameters = new()
+            {
+                GetParameter("@CreatedUtc", DateTime.UtcNow, DbType.DateTime)
+            };
 
             for (int i = 0; i < responses.Count; i++)
             {
@@ -54,15 +57,16 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
 
                 parameters.AddRange(new[]
                 {
-                    GetParameter($"@UserId{i}", response.UserId, SqlDbType.UniqueIdentifier),
-                    GetParameter($"@QuestionId{i}", response.QuestionId, SqlDbType.UniqueIdentifier),
-                    GetParameter($"@Value{i}", response.Value, SqlDbType.NVarChar)
+                    GetParameter($"@ResponseId{i}", Guid.NewGuid(), DbType.Guid),
+                    GetParameter($"@UserId{i}", response.UserId, DbType.Guid),
+                    GetParameter($"@QuestionId{i}", response.QuestionId, DbType.Guid),
+                    GetParameter($"@Value{i}", response.Value, DbType.String)
                 });                
 
                 if (response.ResponseId == Guid.Empty)
                 {
-                    sql += $"INSERT INTO {TableName} (UserId, QuestionId, Value) " +
-                           $"VALUES (@UserId{i}, @QuestionId{i}, @Value{i}); ";
+                    sql += $"INSERT INTO {TableName} (ResponseId, CreatedUtc, UserId, QuestionId, Value) " +
+                           $"VALUES (@ResponseId{i}, @CreatedUtc, @UserId{i}, @QuestionId{i}, @Value{i}); ";
                 }
                 else
                 {
@@ -75,7 +79,7 @@ namespace NoteMapper.Data.Sql.Repositories.Questionnaires
             return ExecuteQueryAsync(sql, parameters);
         }
 
-        protected override UserQuestionResponse Map(SqlDataReader reader)
+        protected override UserQuestionResponse Map(DbDataReader reader)
         {
             return new UserQuestionResponse(
                 reader.GetGuid(0),

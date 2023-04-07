@@ -58,6 +58,7 @@
     private async Task HandleValidSubmitAsync()
     {
         Loading = true;
+        await InvokeAsync(StateHasChanged);
 
         User? user = await IdentityService.FindUserAsync(Model.Email);
         ServiceResult result = await IdentityService.CanUserSignIn(user, Model.Password);
@@ -70,6 +71,7 @@
 
         UserLoginToken? token = await IdentityService.CreateLoginTokenAsync(user.UserId);
         Loading = false;
+        await InvokeAsync(StateHasChanged);
 
         if (token == null)
         {

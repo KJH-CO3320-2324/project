@@ -120,7 +120,7 @@
         }
 
         ConvertingToDefault = userInstrumentId;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
 
         ServiceResult result = await UserInstrumentService.ConvertToDefaultAsync(User.UserId, userInstrumentId);
         FeedbackService.Notify(new FeedbackMessage(result));
@@ -146,7 +146,7 @@
         }
 
         Deleting = userInstrumentId;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
 
         ServiceResult result = await UserInstrumentService.DeleteDefaultInstrumentAsync(userInstrumentId);
         if (result.Success)

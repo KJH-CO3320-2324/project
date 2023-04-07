@@ -31,7 +31,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoteMapper.Services.Web.Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoteMapper.Data.Core.Tests", "NoteMapper.Data.Core.Tests\NoteMapper.Data.Core.Tests.csproj", "{09C45687-68C2-4733-A571-AF4DE6734FA5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoteMapper.Data.Mongo", "NoteMapper.Data.Mongo\NoteMapper.Data.Mongo.csproj", "{CA550B65-922D-42EF-AF00-F7D5A987D762}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NoteMapper.Data.Mongo", "NoteMapper.Data.Mongo\NoteMapper.Data.Mongo.csproj", "{CA550B65-922D-42EF-AF00-F7D5A987D762}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoteMapper.Data.Json", "NoteMapper.Data.Json\NoteMapper.Data.Json.csproj", "{BC8DB41D-586D-4013-BD79-FC637284D10C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -95,6 +97,10 @@ Global
 		{CA550B65-922D-42EF-AF00-F7D5A987D762}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA550B65-922D-42EF-AF00-F7D5A987D762}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA550B65-922D-42EF-AF00-F7D5A987D762}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC8DB41D-586D-4013-BD79-FC637284D10C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC8DB41D-586D-4013-BD79-FC637284D10C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC8DB41D-586D-4013-BD79-FC637284D10C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC8DB41D-586D-4013-BD79-FC637284D10C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,1 @@
+Mock NOSQL document storage. Is not ACID, should not be used in production environment.

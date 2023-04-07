@@ -1,9 +1,8 @@
 ﻿using System.Data;
-using System.Data.SqlClient;
+using System.Data.Common;
 using NoteMapper.Core;
 using NoteMapper.Data.Core.Errors;
 using NoteMapper.Data.Core.Notifications;
-using NoteMapper.Data.Core.Users;
 using NoteMapper.Data.Sql.Extensions;
 
 namespace NoteMapper.Data.Sql.Repositories.Notifications
@@ -26,12 +25,14 @@ namespace NoteMapper.Data.Sql.Repositories.Notifications
 
         public Task<ServiceResult> CreateAsync(UserNotification userNotification)
         {
-            string sql = $"INSERT INTO {TableName} (UserId, NotificationId) " +
-                         $"VALUES (@UserId, @NotificationId) ";
+            string sql = $"INSERT INTO {TableName} (UserNotificationId, CreatedUtc, UserId, NotificationId) " +
+                         $"VALUES (@UserNotificationId, @CreatedUtc, @UserId, @NotificationId) ";
             return ExecuteQueryAsync(sql, new[]
             {
-                GetParameter("@UserId", userNotification.UserId, SqlDbType.UniqueIdentifier),
-                GetParameter("@NotificationId", userNotification.NotificationId, SqlDbType.UniqueIdentifier)
+                GetParameter("@UserNotificationId", Guid.NewGuid(), DbType.Guid),
+                GetParameter("@CreatedUtc", DateTime.UtcNow, DbType.DateTime),
+                GetParameter("@UserId", userNotification.UserId, DbType.Guid),
+                GetParameter("@NotificationId", userNotification.NotificationId, DbType.Guid)
             });
         }
 
@@ -43,8 +44,8 @@ namespace NoteMapper.Data.Sql.Repositories.Notifications
 
             return ReadSingleAsync(sql, new[]
             {
-                GetParameter("@UserId", userId, SqlDbType.UniqueIdentifier),
-                GetParameter("@NotificationId", notificationId, SqlDbType.UniqueIdentifier)
+                GetParameter("@UserId", userId, DbType.Guid),
+                GetParameter("@NotificationId", notificationId, DbType.Guid)
             });
         }
 
@@ -55,7 +56,7 @@ namespace NoteMapper.Data.Sql.Repositories.Notifications
                          $"WHERE UserId = @UserId ";
             return ReadManyAsync(sql, new[]
             {
-                GetParameter("@UserId", userId, SqlDbType.UniqueIdentifier)
+                GetParameter("@UserId", userId, DbType.Guid)
             });
         }
 
@@ -66,14 +67,14 @@ namespace NoteMapper.Data.Sql.Repositories.Notifications
                          "WHERE UserId = @UserId AND NotificationId = @NotificationId ";
             return ExecuteQueryAsync(sql, new[]
             {
-                GetParameter("@UserId", userNotification.UserId, SqlDbType.UniqueIdentifier),
-                GetParameter("@NotificationId", userNotification.NotificationId, SqlDbType.UniqueIdentifier),
-                GetParameter("@HiddenUtc", userNotification.HiddenUtc, SqlDbType.DateTime),
-                GetParameter("@Dismissed", userNotification.Dismissed, SqlDbType.Bit)
+                GetParameter("@UserId", userNotification.UserId, DbType.Guid),
+                GetParameter("@NotificationId", userNotification.NotificationId, DbType.Guid),
+                GetParameter("@HiddenUtc", userNotification.HiddenUtc, DbType.DateTime),
+                GetParameter("@Dismissed", userNotification.Dismissed, DbType.Boolean)
             });
         }
 
-        protected override UserNotification Map(SqlDataReader reader)
+        protected override UserNotification Map(DbDataReader reader)
         {
             return new UserNotification(
                 reader.GetGuid(0),

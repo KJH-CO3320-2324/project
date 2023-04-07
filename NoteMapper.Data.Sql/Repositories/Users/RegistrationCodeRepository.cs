@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using System.Data.SqlClient;
+using System.Data.Common;
 using NoteMapper.Data.Core.Errors;
 using NoteMapper.Data.Core.Users;
 using NoteMapper.Data.Sql.Extensions;
@@ -23,17 +23,17 @@ namespace NoteMapper.Data.Sql.Repositories.Users
 
         public Task<RegistrationCode?> FindAsync(string code)
         {
-            string sql = $"SELECT TOP 1 {SelectColumnSql} " +
+            string sql = $"SELECT {SelectColumnSql} " +
                          $"FROM {TableName} " +
                          $"WHERE Code = @Code ";
 
             return ReadSingleAsync(sql, new[]
             {
-                GetParameter("@Code", code, SqlDbType.NVarChar)
+                GetParameter("@Code", code, DbType.String)
             });
         }
 
-        protected override RegistrationCode Map(SqlDataReader reader)
+        protected override RegistrationCode Map(DbDataReader reader)
         {
             return new RegistrationCode(reader.GetGuid(0),
                 reader.GetString(2), 

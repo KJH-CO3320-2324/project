@@ -151,7 +151,7 @@ else
         }
 
         Deleting = userInstrumentId;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
 
         ServiceResult result = await UserInstrumentService.DeleteInstrumentAsync(User.UserId, userInstrumentId);
 

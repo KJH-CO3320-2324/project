@@ -72,11 +72,13 @@
     private async Task OnPasswordUpdateAsync()
     {
         Loading = true;
+        await InvokeAsync(StateHasChanged);
 
         ServiceResult result = await IdentityService.UpdatePasswordAsync(UserId, 
             UpdatePasswordModel.OldPassword, UpdatePasswordModel.NewPassword);
         SetFeedback(result);
 
         Loading = false;
+        await InvokeAsync(StateHasChanged);
     }
 }

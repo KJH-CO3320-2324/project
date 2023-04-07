@@ -4,8 +4,6 @@ namespace NoteMapper.Data.Mongo
 {
     public class MongoRepositorySettings
     {
-        public string ApplicationName { get; set; } = "";
-
         public string ConnectionString { get; set; } = "";
 
         public ApplicationEnvironment CurrentEnvironment { get; set; }

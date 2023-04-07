@@ -9,6 +9,7 @@ using NoteMapper.Data.Core.Questionnaires;
 using NoteMapper.Data.Core.Users;
 using NoteMapper.Data.Cosmos;
 using NoteMapper.Data.Cosmos.Repositories;
+using NoteMapper.Data.Json;
 using NoteMapper.Data.Mongo;
 using NoteMapper.Data.Mongo.Repositories;
 using NoteMapper.Data.Sql.Repositories;
@@ -52,12 +53,15 @@ namespace NoteMapper.Infrastructure
         private static void RegisterData(IDependencyContainer container, IConfiguration config)
         {
             string sqlConnectionStringName = config.GetValue("Data.Sql.ConnectionStringName");
+            string? sqlConnectionString = config.GetConnectionString(sqlConnectionStringName)
+                ?.Replace("{rootdirectory}", AppContext.BaseDirectory);
 
             container
                 .AddSingleton(new SqlRepositorySettings
                 {
-                    ConnectionString = config.GetConnectionString(sqlConnectionStringName) ?? "",
-                    CurrentEnvironment = config.GetEnum<ApplicationEnvironment>("Environment")
+                    ConnectionString = sqlConnectionString ?? "",
+                    CurrentEnvironment = config.GetEnum<ApplicationEnvironment>("Environment"),
+                    Provider = config.GetValue("Data.Sql.Provider")
                 })
                 .AddScoped<IApplicationErrorRepository, ApplicationErrorSqlRepository>()
                 .AddScoped<IContactRepository, ContactSqlRepository>()
@@ -75,40 +79,57 @@ namespace NoteMapper.Infrastructure
                 .AddScoped<IUserRegistrationCodeRepository, UserRegistrationCodeSqlRepository>()
                 .AddScoped<IUserRepository, UserSqlRepository>();
 
-            string documentStorageProvider = config.GetValue("Data.DocumentStorage.Provider");
+            RegisterDocumentStorageData(container, config);
+        }
+
+        private static void RegisterDocumentStorageData(IDependencyContainer container, IConfiguration config)
+        {
+            string provider = config.GetValue("Data.DocumentStorage.Provider");
             string connectionStringName = config.GetValue("Data.DocumentStorage.ConnectionStringName");
             string connectionString = config.GetConnectionString(connectionStringName) ?? "";
-
-            string applicationName = config.GetValue("Application.Name");
+            string defaultUserId = config.GetValue("Data.DocumentStorage.DefaultUserId");
+            
             ApplicationEnvironment environment = config.GetEnum<ApplicationEnvironment>("Environment");
 
-            if (string.Equals(documentStorageProvider, "Mongo", StringComparison.InvariantCultureIgnoreCase))
-            {                
-                container
-                    .AddSingleton(new MongoRepositorySettings
-                    {
-                        ApplicationName = applicationName,
-                        ConnectionString = connectionString,
-                        CurrentEnvironment = environment,
-                        DatabaseId = config.GetValue("Data.Mongo.DatabaseId"),
-                        DefaultUserId = config.GetValue("Data.Mongo.DefaultUserId")
-                    })
-                    .AddScoped<IUserInstrumentRepository, UserInstrumentMongoRepository>();                
-            }            
-            else
+            if (string.Equals(provider, "Cosmos", StringComparison.InvariantCultureIgnoreCase))
             {
-                // default to Azure Cosmos
+                string applicationName = config.GetValue("Application.Name");
+
                 container
                     .AddSingleton(new AzureCosmosRepositorySettings
                     {
                         ApplicationName = applicationName,
                         ConnectionString = connectionString,
                         CurrentEnvironment = environment,
-                        DatabaseId = config.GetValue("Data.Azure.Cosmos.DatabaseId"),
-                        DefaultUserId = config.GetValue("Data.Azure.Cosmos.DefaultUserId")
+                        DatabaseId = config.GetValue("Data.DocumentStorage.Cosmos.DatabaseId"),
+                        DefaultUserId = defaultUserId
                     })
                     .AddScoped<IUserInstrumentRepository, UserInstrumentAzureCosmosRepository>();
-            }            
+            }
+            else if (string.Equals(provider, "Mongo", StringComparison.InvariantCultureIgnoreCase))
+            {
+                container
+                    .AddSingleton(new MongoRepositorySettings
+                    {
+                        ConnectionString = connectionString,
+                        CurrentEnvironment = environment,
+                        DatabaseId = config.GetValue("Data.DocumentStorage.Mongo.DatabaseId"),
+                        DefaultUserId = defaultUserId
+                    })
+                    .AddScoped<IUserInstrumentRepository, UserInstrumentMongoRepository>();
+            }
+            else if (string.Equals(provider, "Json", StringComparison.InvariantCultureIgnoreCase))
+            {
+                container
+                    .AddSingleton(new JsonRepositorySettings
+                    {
+                        CurrentEnvironment = environment,
+                        DefaultUserId = defaultUserId,
+                        FilePath = config.GetValue("Data.DocumentStorage.Json.Path")
+                            .Replace("{rootdirectory}", AppContext.BaseDirectory)
+                    })
+                    .AddScoped<IUserInstrumentRepository, UserInstrumentJsonRepository>();
+            }
         }
 
         private static void RegisterIdentity(IDependencyContainer container, IConfiguration config)
