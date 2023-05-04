@@ -15,7 +15,7 @@ namespace NoteMapper.Services.Web.Notifications
 
         public Task<ServiceResult> CreateNotificationAsync(EditNotificationViewModel viewModel)
         {
-            Notification notification = new Notification(Guid.Empty, viewModel.Heading, viewModel.ContentHtml,
+            Notification notification = new(Guid.Empty, viewModel.Heading, viewModel.ContentHtml,
                 viewModel.Active, viewModel.HideForDays);
             return _notificationRepository.CreateAsync(notification);
         }

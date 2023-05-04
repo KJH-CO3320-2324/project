@@ -23,7 +23,7 @@ namespace NoteMapper.Services.Web.Security
         {
             // Docs: https://developers.google.com/recaptcha/docs/verify
 
-            using (HttpClient httpClient = new HttpClient())
+            using (HttpClient httpClient = new())
             {
                 HttpContent formContent = new FormUrlEncodedContent(new[]
                 {

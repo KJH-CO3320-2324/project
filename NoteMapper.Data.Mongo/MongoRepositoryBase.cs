@@ -123,7 +123,7 @@ namespace NoteMapper.Data.Mongo
 
         private IMongoCollection<BsonDocument> GetCollection()
         {
-            MongoClient client = new MongoClient(_settings.ConnectionString);
+            MongoClient client = new(_settings.ConnectionString);
             IMongoDatabase database = client.GetDatabase(_settings.DatabaseId);
             IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(CollectionId);
             return collection;

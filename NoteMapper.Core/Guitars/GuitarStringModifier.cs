@@ -1,5 +1,4 @@
 ﻿using System.Text.RegularExpressions;
-using NoteMapper.Core.Permutations;
 
 namespace NoteMapper.Core.Guitars
 {
@@ -22,24 +21,6 @@ namespace NoteMapper.Core.Guitars
         private IReadOnlyDictionary<int, int> Offsets { get; }        
 
         public string Type { get; }
-
-        public static IDictionary<int, IReadOnlyCollection<GuitarStringModifier>> GetPermutations(
-            IReadOnlyCollection<GuitarStringModifier> modifiers)
-        {
-            IDictionary<int, IReadOnlyCollection<GuitarStringModifier>> modifierPermutations =
-                    new Dictionary<int, IReadOnlyCollection<GuitarStringModifier>>();
-
-            foreach (Permutation permutation in Permutation.GetPermutations(modifiers.Count))
-            {
-                IReadOnlyCollection<GuitarStringModifier> permutationModifiers = modifiers
-                    .Where((modifier, i) => permutation.Get(i))
-                    .ToArray();
-
-
-            }
-
-            return modifierPermutations;
-        }
 
         public static GuitarStringModifier Parse(string s)
         {

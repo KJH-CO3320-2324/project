@@ -36,9 +36,7 @@ namespace NoteMapper.Core.Guitars
             if (_permutations != null)
             {
                 return _permutations;
-            }
-
-            List<IReadOnlyCollection<GuitarStringModifier>> modifierPermutations = new();
+            }            
 
             HashSet<Permutation> invalidPermutations = new();
             foreach (GuitarStringModifier modifier1 in this)
@@ -62,6 +60,8 @@ namespace NoteMapper.Core.Guitars
                     invalidPermutations.Add(new Permutation(bits));
                 }                
             }
+
+            List<IReadOnlyCollection<GuitarStringModifier>> modifierPermutations = new();
 
             IReadOnlyCollection<Permutation> permutations = Permutation.GetPermutations(_modifiers.Count);
             foreach (Permutation permutation in permutations)

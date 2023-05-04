@@ -118,8 +118,8 @@ namespace NoteMapper.Core.Guitars
             if (options.Notes.Type == NoteCollectionType.Chord && options.MaxChordStringGap > 0)
             {
                 // group the string indexes into clusters based on the max string gap
-                List<List<int>> stringIndexClusters = new List<List<int>>();
-                List<List<int>> noteIndexClusters = new List<List<int>>();
+                List<List<int>> stringIndexClusters = new();
+                List<List<int>> noteIndexClusters = new();
                 
                 for (int i = 0; i < stringNotes.Count; i++)
                 {
@@ -152,7 +152,7 @@ namespace NoteMapper.Core.Guitars
                     List<int> stringIndexCluster = stringIndexClusters[i];
                     List<int> noteIndexCluster = noteIndexClusters[i];
 
-                    HashSet<int> uniqueNoteIndexes = new HashSet<int>(noteIndexCluster);
+                    HashSet<int> uniqueNoteIndexes = new(noteIndexCluster);
 
                     if (uniqueNoteIndexes.Count < options.Threshold)
                     {

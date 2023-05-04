@@ -10,7 +10,7 @@ namespace NoteMapper.Core.Tests
         [TestCase(-12, ExpectedResult = 0)]
         public static int Constructor_IndexLessThanZero_SetsIndexToPositiveValue(int index)
         {
-            Note note = new Note(index);
+            Note note = new(index);
             return note.Index;
         }
 
@@ -23,7 +23,7 @@ namespace NoteMapper.Core.Tests
         [TestCase(11, ExpectedResult = "B")]
         public static string GetName_NaturalNotes_ReturnsName(int noteIndex)
         {
-            Note note = new Note(noteIndex);
+            Note note = new(noteIndex);
             return note.GetName(AccidentalType.Sharp);
         }
 
@@ -39,7 +39,7 @@ namespace NoteMapper.Core.Tests
         [TestCase(10, AccidentalType.Flat, ExpectedResult = "B♭")]
         public static string GetName_AccidentalNotes_ReturnsName(int noteIndex, AccidentalType accidental)
         {
-            Note note = new Note(noteIndex);
+            Note note = new(noteIndex);
             return note.GetName(accidental);
         }
 

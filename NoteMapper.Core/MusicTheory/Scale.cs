@@ -21,7 +21,7 @@ namespace NoteMapper.Core.MusicTheory
 
         public static Scale Parse(int noteIndex, ScaleType scaleType)
         {
-            Note note = new Note(noteIndex);
+            Note note = new(noteIndex);
             
             IReadOnlyCollection<byte> intervals = GetIntervals(scaleType);
             IEnumerable<Note> notes = GetNotes(note, intervals);
@@ -120,23 +120,6 @@ namespace NoteMapper.Core.MusicTheory
             {
                 yield return startingNote = startingNote.Next(interval);
             }
-        }
-
-        private static ScaleType ParseScaleType(string type)
-        {
-            if (Enum.TryParse(type, out ScaleType parsed) && Enum.IsDefined(parsed))
-            {
-                return parsed;
-            }
-
-            if (KeyShortNames.Any(x => string.Equals(type, x.Value, StringComparison.InvariantCultureIgnoreCase)))
-            {
-                return KeyShortNames
-                    .First(x => string.Equals(type, x.Value, StringComparison.InvariantCultureIgnoreCase))
-                    .Key;
-            }
-
-            return default;
         }
     }
 }

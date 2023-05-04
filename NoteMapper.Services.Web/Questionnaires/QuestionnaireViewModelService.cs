@@ -110,7 +110,7 @@ namespace NoteMapper.Services.Web.Questionnaires
             IReadOnlyCollection<QuestionnaireQuestion> questions = await _questionRepository.GetQuestionsAsync(
                 questionnaire.QuestionnaireId);
 
-            List<UserQuestionResponse> responses = new List<UserQuestionResponse>(await _responseRepository.GetAsync(
+            List<UserQuestionResponse> responses = new(await _responseRepository.GetAsync(
                 userId, questionnaire.QuestionnaireId));
 
             foreach (QuestionnaireResponseViewModel responseViewModel in viewModel.Responses)
