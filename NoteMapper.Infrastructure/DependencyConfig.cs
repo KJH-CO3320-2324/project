@@ -146,7 +146,8 @@ namespace NoteMapper.Infrastructure
                     LoginTokenExpiresAfterSeconds = config.GetInt("Account.LoginTokenExpiresAfterSeconds"),
                     PasswordResetCodeExpiresAfterHours = config.GetInt("Account.PasswordResetCodeExpiresAfterHours"),
                     PasswordResetUrl = baseUrl + config.GetValue("Account.PasswordResetUrl"),
-                    RegistrationType = config.GetEnum<RegistrationType>("Account.RegistrationType")
+                    RegistrationType = config.GetEnum<RegistrationType>("Account.RegistrationType"),
+                    RequireEmailVerification = config.GetBool("Account.RequireEmailVerification")
                 })
                 .AddScoped<IPasswordHasher, CustomPasswordHasher>()
                 .AddSingleton(new CustomPasswordHasherSettings

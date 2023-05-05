@@ -18,9 +18,9 @@ namespace NoteMapper.Services.Users
 
         Task<User?> FindUserAsync(string email);
 
-        RegistrationType GetRegistrationType();
+        RegistrationDetails GetRegistrationDetails();
 
-        Task<ServiceResult> RegisterUserAsync(string email, string? code);
+        Task<ServiceResult> RegisterUserAsync(string email, string? code, string password);
 
         Task<ServiceResult> RequestPasswordResetAsync(string email);
 

@@ -13,9 +13,15 @@
 <ContentPage>
     <h1>Register</h1>
 
+    @if (Model == null)
+    {
+        <Loading />
+        return;
+    }
+
     <Feedback Model="@Feedback" />
 
-    @if (RegistrationType == RegistrationType.Closed)
+    @if (Model.RegistrationType == RegistrationType.Closed)
     {
         <div class="alert alert-danger">
             Registration is currently closed
@@ -29,7 +35,7 @@
             <DataAnnotationsValidator />
 
             <fieldset disabled="@Loading">
-                @if (RegistrationType == RegistrationType.InviteOnly)
+                @if (Model.RegistrationType == RegistrationType.InviteOnly)
                 {
                     <div class="alert alert-warning">
                         Registration is currently invite only
@@ -48,9 +54,30 @@
                     <ValidationMessage For="() => Model.Email" />
                 </div>
 
+                @if (Model.ShowPassword)
+                {
+                    <div class="mb-3">
+                        <label for="password" class="form-label required">Password</label>
+                        <InputText id="password" type="password" @bind-Value="Model.Password" class="form-control" />
+                        <ValidationMessage For="() => Model.Password" />
+                    </div>
+                }
+                else
+                {
+                    <input id="password" type="hidden" value="notused" />
+                }
+
                 <div>
                     <button type="submit" class="btn btn-primary">
-                        Send activation link
+                        @if (Model.ShowPassword)
+                        {
+                            @:Register
+                        }
+                        else
+                        {
+                            @:Send activation link
+                        }
+                        
                         @if (Loading)
                         {
                             <ButtonSpinner />
@@ -69,21 +96,29 @@
 @code {
     bool Loading { get; set; }
 
-    RegisterViewModel Model { get; set; } = new();
-
-    RegistrationType RegistrationType { get; set; }
+    RegisterViewModel? Model { get; set; }
 
     protected override void OnInitialized()
     {
-        RegistrationType = IdentityService.GetRegistrationType();        
+        RegistrationDetails details = IdentityService.GetRegistrationDetails();
+        Model = new RegisterViewModel
+        {
+            RegistrationType = details.RegistrationType,
+            ShowPassword = details.ShowPassword
+        };
     }
 
     private async Task HandleValidSubmitAsync()
     {
+        if (Model == null)
+        {
+            return;
+        }
+
         Loading = true;
         await InvokeAsync(StateHasChanged);
 
-        ServiceResult result = await IdentityService.RegisterUserAsync(Model.Email, Model.Code);
+        ServiceResult result = await IdentityService.RegisterUserAsync(Model.Email, Model.Code, Model.Password);
         Feedback = FeedbackViewModel.FromServiceResult(result);
 
         Loading = false;

@@ -11,12 +11,15 @@
       "provider": "cdnjs",
       "library": "bootstrap-icons@1.10.3",
       "destination": "wwwroot/lib/bootstrap-icons/"
+    },
+    {
+      "library": "shepherd.js@11.0.1",
+      "destination": "wwwroot/shepherd.js/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "popper.js@2.11.7",
+      "destination": "wwwroot/lib/popper.js/"
     }
-  ,
-{
-  "provider": "unpkg",
-  "library": "shepherd.js@11.0.1",
-  "destination": "wwwroot/shepherd.js/"
-}
-]
+  ]
 }

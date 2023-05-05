@@ -133,14 +133,15 @@ namespace NoteMapper.Identity.Microsoft
             return _userRepository.FindByEmailAsync(email);
         }
 
-        public RegistrationType GetRegistrationType()
+        public RegistrationDetails GetRegistrationDetails()
         {
-            return _settings.RegistrationType;
+            bool showPassword = !_settings.RequireEmailVerification;
+            return new RegistrationDetails(_settings.RegistrationType, showPassword);
         }
 
-        public async Task<ServiceResult> RegisterUserAsync(string email, string? code)
+        public async Task<ServiceResult> RegisterUserAsync(string email, string? code, string password)
         {
-            RegistrationType registrationType = GetRegistrationType();
+            RegistrationType registrationType = _settings.RegistrationType;
             if (registrationType == RegistrationType.Closed)
             {
                 return ServiceResult.Failure("Registration is currently closed");
@@ -159,8 +160,9 @@ namespace NoteMapper.Identity.Microsoft
                 }
             }
 
-            ServiceResult defaultResult = ServiceResult.Successful($"An activation email has been sent to {email}. " +
-                "If you have already registered you can login or reset your password.");
+            ServiceResult defaultResult = _settings.RequireEmailVerification 
+                ? ServiceResult.Successful($"An activation email has been sent to {email}. If you have already registered you can login or reset your password.")
+                : ServiceResult.Failure("That email address is already in use");
             ServiceResult defaultErrorResult = ServiceResult.Failure("An error has occurred while creating your account");
 
             User? existing = await FindUserAsync(email);
@@ -196,7 +198,27 @@ namespace NoteMapper.Identity.Microsoft
                 await _userRegistrationCodeRepository.CreateAsync(userRegistrationCode);
             }
 
-            await SendActivationEmailAsync(user);
+            if (_settings.RequireEmailVerification)
+            {
+                await SendActivationEmailAsync(user);
+            }            
+            else
+            {
+                user.Activate();
+                ServiceResult activationResult = await _userRepository.ActivateAsync(user);
+                if (!activationResult.Success)
+                {
+                    return ServiceResult.Failure("An error occurred activating your account");
+                }
+
+                ServiceResult passwordResult = await SetUserPasswordAsync(user.UserId, password);
+                if (!passwordResult.Success)
+                {
+                    return ServiceResult.Failure("An error occurred activating your account");
+                }
+
+                return ServiceResult.Successful("Your account has been activated");
+            }
 
             return defaultResult;
         }

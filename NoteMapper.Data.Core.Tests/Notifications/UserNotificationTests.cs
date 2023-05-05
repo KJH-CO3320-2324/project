@@ -17,8 +17,8 @@ namespace NoteMapper.Data.Core.Tests.Notifications
             Notification notification = GetNotification(active: active);
 
             bool result = userNotification.ShouldShow(notification);
-
-            Assert.AreEqual(active, result);
+           
+            Assert.That(result, Is.EqualTo(active));
         }
 
         [Test]
@@ -29,7 +29,7 @@ namespace NoteMapper.Data.Core.Tests.Notifications
 
             bool result = userNotification.ShouldShow(notification);
 
-            Assert.IsFalse(result);
+            Assert.That(result, Is.False);
         }
 
         [Test]
@@ -40,7 +40,7 @@ namespace NoteMapper.Data.Core.Tests.Notifications
 
             bool result = userNotification.ShouldShow(notification);
 
-            Assert.IsTrue(result);
+            Assert.That(result, Is.True);
         }
 
         [Test]
@@ -51,7 +51,7 @@ namespace NoteMapper.Data.Core.Tests.Notifications
 
             bool result = userNotification.ShouldShow(notification);
 
-            Assert.IsFalse(result);
+            Assert.That(result, Is.False);
         }
 
         private static Notification GetNotification(int hideForDays = 1, 

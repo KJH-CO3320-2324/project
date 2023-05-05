@@ -17,5 +17,7 @@ namespace NoteMapper.Identity.Microsoft
         public string PasswordResetUrl { get; set; } = "";
 
         public RegistrationType RegistrationType { get; set; }
+
+        public bool RequireEmailVerification { get; set; }
     }
 }

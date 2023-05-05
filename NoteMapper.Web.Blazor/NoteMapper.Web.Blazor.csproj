@@ -42,6 +42,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="appSettings.Development.json">
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+  
+  <ItemGroup>
     <ProjectReference Include="..\NoteMapper.Data.Core\NoteMapper.Data.Core.csproj" />
     <ProjectReference Include="..\NoteMapper.Infrastructure\NoteMapper.Infrastructure.csproj" />
   </ItemGroup>
