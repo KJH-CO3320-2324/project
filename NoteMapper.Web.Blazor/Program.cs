@@ -33,7 +33,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+bool disableHttps = app.Configuration.GetValue<bool>("Security.DisableHttps");
+if (!disableHttps)
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseStaticFiles();
 
