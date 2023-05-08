@@ -1,0 +1,55 @@
+﻿@page "/privacy"
+@inherits NoteMapperComponentBase
+@attribute [AllowAnonymous]
+
+@using NoteMapper.Web.Blazor.Shared.Components
+@using NoteMapper.Web.Blazor.Shared.Layouts
+
+<ContentPage>
+    <h1>Privacy</h1>
+
+    <h4>Personal data</h4>
+    <p>
+        If you register an account on this website the only personal detail that we store is your email address.
+    </p>
+    <p>
+        Your password is stored securely using a <a href="https://www.technipages.com/definition/one-way-hash-function/" target="_blank">one-way hash function</a>.
+        This means that your password can never be worked out by anybody who has possession of the data stored in the database. 
+        The data stored is only used for verifying that you have supplied the correct password when logging in.
+    </p>
+
+    <h4>Cookies</h4>
+    <p>
+        This website sets the following cookies. By using this website you consent to their usage.
+    </p>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Purpose</th>
+                <th>Necessary?</th>
+                <th>Source</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>.AspNetCore.Identity.Application</td>
+                <td>Set by this website to keep you logged in</td>
+                <td>For accessing features reserved for logged in users</td>
+                <td>First party</td>
+            </tr>
+            <tr>
+                <td><a href="https://cookiepedia.co.uk/cookies/ARRAffinity" target="_blank">ARRAffinity</a>, <a href="https://cookiepedia.co.uk/cookies/ARRAffinitySameSite" target="_blank">ARRAffinitySameSite</a></td>
+                <td>Used by Microsoft Azure for load balancing to make sure the visitor page requests are routed to the same server in any browsing session</td>
+                <td>Yes</td>
+                <td>Third party</td>
+            </tr>
+            <tr>
+                <td><a href="https://developers.google.com/recaptcha/docs/faq#does-recaptcha-use-cookies" target="_blank">_GRECAPTCHA</a></td>
+                <td>This website uses Google reCaptcha to prevent malicious usage.</td>
+                <td>For submitting forms</td>
+                <td>Third party</td>
+            </tr>
+        </tbody>
+    </table>
+</ContentPage>
